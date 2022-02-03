@@ -1,0 +1,1 @@
+- Database prepopulation not done before first showing the app. Close and restart.

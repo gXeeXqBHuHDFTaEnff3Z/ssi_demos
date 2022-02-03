@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="de.vertedge.ssiwallet">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_wallet"
+        android:label="@string/app_name"
+        android:roundIcon="@drawable/ic_wallet"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.SSIWalletDemo">
+        <activity
+            android:name=".DetailsActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".SigningActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.SSIWalletDemo">
+            <intent-filter>
+                <action android:name="android.intent.action.ASSIST" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="application/ssi" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ui.login.LoginActivity"
+            android:exported="false"
+            android:label="@string/title_activity_login" />
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:screenOrientation="fullSensor"
+            android:theme="@style/Theme.SSIWalletDemo.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

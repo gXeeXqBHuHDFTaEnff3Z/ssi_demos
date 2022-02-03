@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_ids">
+
+    <fragment
+        android:id="@+id/nav_ids"
+        android:name="de.vertedge.ssiwallet.ui.home.HomeFragment"
+        android:label="@string/menu_home"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/nav_attributes"
+        android:name="de.vertedge.ssiwallet.ui.VCs.FragmentVCs"
+        android:label="@string/menu_gallery"
+        tools:layout="@layout/fragment_vcs" />
+
+    <fragment
+        android:id="@+id/nav_authorities"
+        android:name="de.vertedge.ssiwallet.ui.Authorities.FragmentAuthorities"
+        android:label="@string/menu_slideshow"
+        tools:layout="@layout/fragment_authorities" />
+
+    <fragment
+        android:id="@+id/nav_help"
+        android:name="de.vertedge.ssiwallet.FragmentHelp"
+        android:label="@string/menu_help"
+        tools:layout="@layout/fragment_help" />
+</navigation>
