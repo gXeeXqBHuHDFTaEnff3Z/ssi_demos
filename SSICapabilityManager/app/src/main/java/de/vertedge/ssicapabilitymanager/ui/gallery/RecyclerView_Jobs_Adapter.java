@@ -42,15 +42,17 @@ public class RecyclerView_Jobs_Adapter extends RecyclerView.Adapter<RecyclerView
     private RecyclerView_Messages_Adapter.ItemClickListener mClickListener;
     private final OnDataChangedListener mDataListener;
     private final Context _context;
+    private final boolean enableApply;
     CapMgmt_Database db;
 
     // data is passed into the constructor
-    public RecyclerView_Jobs_Adapter(Context context, List<Joblisting> data, OnDataChangedListener listener) {
+    public RecyclerView_Jobs_Adapter(Context context, List<Joblisting> data, OnDataChangedListener listener, boolean enableApply) {
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
         this._context = context;
+        this.enableApply = enableApply;
         this.db = CapMgmt_Database.getInstance(_context);
-        Log.i(this.toString(), "creating adapter with joblisting size " + data.size());
+        Log.d(this.toString(), "creating adapter with joblisting size " + data.size());
         mDataListener = listener;
     }
 
@@ -119,6 +121,7 @@ public class RecyclerView_Jobs_Adapter extends RecyclerView.Adapter<RecyclerView
         holder._txtVvalidUntil.setText(_validUntil);
         holder._txtVrequirements.setText(_requirementsString);
         holder._bApplyForJob.setTag(_job);
+        if (!enableApply) holder._bApplyForJob.setVisibility(View.GONE);
         holder._txtVLink.setText(linkmsg);
     }
 

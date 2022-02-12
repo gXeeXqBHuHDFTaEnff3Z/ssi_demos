@@ -14,28 +14,27 @@ import org.json.JSONObject;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
 
 public class SSI_Representation {
 
     private final ArrayList<SSI_Claim> _claims;
     private final ArrayList<SSI_Proof> _proofs;
     private long _credentialSubject;
-    private final String _context;
+    private final String _termsOfUse; // how can this rep be used?
+    private final String _context; // in what context is this rep valid?
     private final String _issuer;
     private final Instant _issuance;
-    private final Instant _expiration;
+    private final Instant _expires;
 
-    public SSI_Representation(ArrayList<SSI_Claim> _claims, ArrayList<SSI_Proof> _proofs, long _credentialSubject, String _context, String _issuer, Instant _issuance, Instant _expiration) {
+    public SSI_Representation(ArrayList<SSI_Claim> _claims, ArrayList<SSI_Proof> _proofs, long _credentialSubject, String termsOfUse, String _context, String _issuer, Instant _issuance, Instant _expires) {
         this._claims = _claims;
         this._proofs = _proofs;
         this._credentialSubject = _credentialSubject;
         this._context = _context;
+        this._termsOfUse = termsOfUse;
         this._issuer = _issuer;
         this._issuance = _issuance;
-        this._expiration = _expiration;
+        this._expires = _expires;
     }
 
     /** creates a representation from a json
@@ -49,6 +48,11 @@ public class SSI_Representation {
         JSONObject jo = new JSONObject(json);
         this._credentialSubject = jo.getLong("_credentialSubject");
         this._context = jo.getString("_context");
+
+        // terms are optional
+        if ( jo.has("_termsOfUse") ){
+            this._termsOfUse = jo.getString("_termsOfUse");
+        } else this._termsOfUse = null;
         this._issuer = jo.getString("_issuer");
 
         // dates are either empty or in "yyyy-MM-dd'T'HH:mm:ssZ" format
@@ -63,15 +67,15 @@ public class SSI_Representation {
             this._issuance = null;
         }
 
-        if ( jo.has("_expiration") ){
-            String expiration = jo.getString("_expiration");
+        if ( jo.has("_expires") ){
+            String expiration = jo.getString("_expires");
             if (expiration.equals("{}")){
-                this._expiration = null;
+                this._expires = null;
             } else {
-                this._expiration = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ").parse( expiration, Instant::from);
+                this._expires = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ").parse( expiration, Instant::from);
             }
         } else {
-            this._expiration = null;
+            this._expires = null;
         }
 
         // claims
@@ -130,7 +134,11 @@ public class SSI_Representation {
     }
 
     public Instant get_expiration() {
-        return _expiration;
+        return _expires;
+    }
+
+    public String get_termsOfUse() {
+        return _termsOfUse;
     }
 
     /**
@@ -195,6 +203,6 @@ public class SSI_Representation {
         Instant issuance = Instant.now();
         Instant expiration = Instant.now().plusSeconds(60*60*24*30);
 
-        return new SSI_Representation(claims, proofs, -1, vcContext, "fernuni", issuance, expiration);
+        return new SSI_Representation(claims, proofs, -1, "de.vertedge.ssicapabilitymanager", vcContext, "fernuni", issuance, expiration);
     }
 }

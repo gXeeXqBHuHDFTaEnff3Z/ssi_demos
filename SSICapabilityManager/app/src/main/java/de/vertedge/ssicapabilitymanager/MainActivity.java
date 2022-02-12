@@ -1,10 +1,11 @@
 package de.vertedge.ssicapabilitymanager;
 
+import android.app.SearchManager;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
-import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -12,27 +13,19 @@ import android.view.Menu;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.crashlytics.buildtools.reloc.org.apache.commons.codec.digest.DigestUtils;
-
 import androidx.appcompat.content.res.AppCompatResources;
-import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
-import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
-
 import org.json.JSONException;
-
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-
 import de.vertedge.ssicapabilitymanager.SSI.SSI_Claim;
 import de.vertedge.ssicapabilitymanager.SSI.SSI_Representation;
 import de.vertedge.ssicapabilitymanager.capabilitymgmt.CapMgmt_Database;
@@ -42,7 +35,6 @@ import de.vertedge.ssicapabilitymanager.capabilitymgmt.Message;
 import de.vertedge.ssicapabilitymanager.capabilitymgmt.Organisation;
 import de.vertedge.ssicapabilitymanager.capabilitymgmt.User;
 import de.vertedge.ssicapabilitymanager.databinding.ActivityMainBinding;
-import de.vertedge.ssicapabilitymanager.ui.home.FragmentMessages;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -74,12 +66,15 @@ public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration mAppBarConfiguration;
     private ActivityMainBinding binding;
+    private DrawerLayout drawer;
 
     private final List<OnPermitDenyListener> _listeners = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -88,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         String newmsg = getString(R.string.new_message);
         binding.appBarMain.fab.setOnClickListener(view -> Snackbar.make(view, newmsg, Snackbar.LENGTH_LONG)
                 .setAction("Action", null).show());
-        DrawerLayout drawer = binding.drawerLayout;
+        drawer = binding.drawerLayout;
         NavigationView navigationView = binding.navView;
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
@@ -155,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         CapMgmt_Database db = CapMgmt_Database.getInstance(getApplicationContext());
-        Log.i(this.toString(), "Received reply with requestCode " + requestCode + " and result code " + resultCode);
+        Log.d(this.toString(), "Received reply with requestCode " + requestCode + " and result code " + resultCode);
 
         if (requestCode == _requestCodeLogin) {
             if (resultCode == RESULT_OK) {
@@ -166,27 +161,27 @@ public class MainActivity extends AppCompatActivity {
                 String _claim = _data.getString(EXTRA_CLAIMS);
                 SSI_Representation vcrep = null;
 
-                if ( data.hasExtra(EXTRA_REP_JSON) )
-                try {
-                   vcrep = new SSI_Representation( _data.getString(EXTRA_REP_JSON) );
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    vcrep = null;
-                }
+                if (data.hasExtra(EXTRA_REP_JSON))
+                    try {
+                        vcrep = new SSI_Representation(_data.getString(EXTRA_REP_JSON));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        vcrep = null;
+                    }
 
-                Log.i(this.toString(), "trying to LOGIN " + _firstname + " " + _lastname + " with claim " + _claim);
+                Log.d(this.toString(), "trying to LOGIN " + _firstname + " " + _lastname + " with claim " + _claim);
 
                 // try to find user by claim we have. first the old claim, then by rep
                 _currentUser = db.usersDao().findByDID(_claim);
-                if ( (_currentUser == null) && (vcrep != null) )
-                    for (SSI_Claim claim : vcrep.get_claims()){
+                if ((_currentUser == null) && (vcrep != null))
+                    for (SSI_Claim claim : vcrep.get_claims()) {
                         _currentUser = db.usersDao().findByDID(claim.get_value());
                         if (_currentUser != null) break;
                     }
 
                 int _picture = R.drawable.ic_certificate;
                 if (_currentUser != null) {
-                    Log.i(this.toString(), "Found user for rep " + vcrep);
+                    Log.d(this.toString(), "Found user for rep " + vcrep);
                     _picture = _currentUser.get_picture();
                 } else {
                     Log.e(this.toString(), "Could not find user for claim " + _claim);
@@ -203,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
                 ImageView nav_pic = (ImageView) headerView.findViewById(R.id.imgVnav_header_pic);
                 tVusername.setText(_firstname + " " + _lastname);
                 tVuser_info.setText(_currentUser.get_ssidid());
-                Log.i(this.toString(), "Received intent with requestCode " + requestCode + ", lastname " + _lastname + ", claim " + _currentUser + ", signature: " + _signature);
+                Log.d(this.toString(), "Received intent with requestCode " + requestCode + ", lastname " + _lastname + ", claim " + _currentUser + ", signature: " + _signature);
 
                 // find out if we should display the jobs
                 boolean jobsVisibility = true;
@@ -214,6 +209,31 @@ public class MainActivity extends AppCompatActivity {
                 Menu nav_Menu = navigationView.getMenu();
                 nav_Menu.findItem(R.id.nav_gallery).setVisible(jobsVisibility);
                 nav_pic.setImageDrawable(AppCompatResources.getDrawable(this, _picture));
+
+                // if there are no messages, display jobs or caps
+                String msguser = "ssi:" + _currentUser.get_ssidid();
+                boolean hasMessages = CapMgmt_Database.hasMessages(this, msguser);
+                if (!hasMessages) {
+                    /*
+                    // TODO uncommenting will replace the messages fragment permanently
+                    Fragment newFragment;
+                    int menuItem;
+                    if (jobsVisibility) {
+                        newFragment = new FragmentJobs();
+                        menuItem = R.id.nav_gallery;
+                    } else {
+                        newFragment = new FragmentCapabilities();
+                        menuItem = R.id.nav_slideshow;
+                    }
+                    androidx.fragment.app.FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+                    ft.replace(R.id.nav_host_fragment_content_main, newFragment);
+                    ft.setTransition(androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                    ft.addToBackStack(null);
+                    ft.commit();
+                    navigationView.setCheckedItem(menuItem);*/
+                    drawer.open();
+                }
+
             } else finish();
         } else if (requestCode == _requestCodeSigning) {
             // this is a reply to signing, check if it was signed
@@ -236,7 +256,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 long _receivedID = _data.getLong(EXTRA_ID);
 
-                Log.i(this.toString(), "Received intent with requestCode " + requestCode + ", id " + _receivedID + ", lastname " + _lastname + ", claims " + _claims);
+                Log.d(this.toString(), "Received intent with requestCode " + requestCode + ", id " + _receivedID + ", lastname " + _lastname + ", claims " + _claims);
 
                 // create new message for the requesting user with his new signed cap
                 ArrayList<Long> emptycaps = new ArrayList<>();
@@ -273,6 +293,7 @@ public class MainActivity extends AppCompatActivity {
                 finish();
             }
         }
+
     }
 
     public static String getApplicationName(Context context) {
@@ -305,39 +326,39 @@ public class MainActivity extends AppCompatActivity {
         Capability capability;
 
         // if message is a job application, we want to verify the claims
-        if (message.is_isJobApplication()){
-            Log.i(this.toString(), "Message " + message.get_uid() + " is  a job application");
+        if (message.is_isJobApplication()) {
+            Log.d(this.toString(), "Message " + message.get_uid() + " is  a job application");
             action = "DETAILS";
             claim = db.capDao().get(message.get_signedCapabilities().get(0)).get_name();
             representation = message.get_attachedRep();
             signature = message.get_signature();
         } else
-        // if message has a signed attachment but is no jobapplication, then this is for putting it in ssi app
-        if (message.get_signature() != null) {
-            Log.i(this.toString(), "Message " + message.get_uid() + " has signed attachment");
-            action = "ADDING:VC";
-            //claim = db.capDao().get(message.get_signedCapabilities().get(0)).get_name();
-            representation = message.get_attachedRep();
-            signature = message.get_signature();
-            ssidid = message.get_to_user();
-        } else {
-            Log.i(this.toString(), "Message " + message.get_uid() + " has unsigned attachment: " + message.get_text());
-            // message has no signed attachment, this is for signing one
-            action = "SIGNING";
-            // TODO this does only get the first cap, not all of them
-            capability = db.capDao().get(message.get_unsignedCapabilities().get(0));
-            representation = message.get_attachedRep();
-            claim = capability.get_name();
+            // if message has a signed attachment but is no jobapplication, then this is for putting it in ssi app
+            if (message.get_signature() != null) {
+                Log.d(this.toString(), "Message " + message.get_uid() + " has signed attachment");
+                action = "ADDING:VC";
+                //claim = db.capDao().get(message.get_signedCapabilities().get(0)).get_name();
+                representation = message.get_attachedRep();
+                signature = message.get_signature();
+                ssidid = message.get_to_user();
+            } else {
+                Log.d(this.toString(), "Message " + message.get_uid() + " has unsigned attachment: " + message.get_text());
+                // message has no signed attachment, this is for signing one
+                action = "SIGNING";
+                // TODO this does only get the first cap, not all of them
+                capability = db.capDao().get(message.get_unsignedCapabilities().get(0));
+                representation = message.get_attachedRep();
+                claim = capability.get_name();
 
-            signature = DigestUtils.sha256Hex(message.toString());
-        }
+                signature = DigestUtils.sha256Hex(message.toString());
+            }
 
         // create intent
         Intent ssiintent = new Intent(Intent.ACTION_ASSIST);
         ssiintent.setType("application/ssi");
 
         // add variables to intent
-        Log.i(this.toString(), "Starting Wallet app with intent for action " + action + ", claim " + claim + " and signature " + signature);
+        Log.d(this.toString(), "Starting Wallet app with intent for action " + action + ", claim " + claim + " and signature " + signature);
         Bundle extras = new Bundle();
         extras.putString(EXTRA_APPNAME, getApplicationName(this));
         extras.putString(EXTRA_ACTION, action);

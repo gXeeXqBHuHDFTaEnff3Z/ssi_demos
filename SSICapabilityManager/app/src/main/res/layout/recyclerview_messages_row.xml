@@ -85,23 +85,25 @@
                         android:id="@+id/bRecyclerDeny"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_margin="12dp"
+                        android:layout_margin="8dp"
                         android:layout_weight="1"
                         android:backgroundTint="#B82020"
                         android:drawableStart="@drawable/ic_deny"
                         android:onClick="onDenyClick"
                         android:text="@string/deny"
+                        android:textAllCaps="false"
                         android:textSize="@dimen/text_small" />
 
                     <Button
                         android:id="@+id/bRecyclerGotoSigning"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_margin="12dp"
+                        android:layout_margin="8dp"
                         android:layout_weight="1"
                         android:backgroundTint="#1FA122"
                         android:onClick="onOKClick"
                         android:text="@string/goto_signing"
+                        android:textAllCaps="false"
                         android:textSize="@dimen/text_small"
                         tools:ignore="TextContrastCheck" />
                 </LinearLayout>

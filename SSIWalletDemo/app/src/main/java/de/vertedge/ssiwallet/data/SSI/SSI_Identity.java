@@ -13,6 +13,9 @@ import androidx.room.Query;
 import androidx.room.TypeConverter;
 import androidx.room.TypeConverters;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.time.Instant;
@@ -45,9 +48,6 @@ public class SSI_Identity {
 
         @Insert
         long insert(SSI_Identity identity);
-
-        @Delete
-        void delete(SSI_Identity identity);
     }
 
     public static class DateConverter {
@@ -81,23 +81,25 @@ public class SSI_Identity {
     }
 
     @PrimaryKey(autoGenerate = true) private long _uid;
+    // personal data
     private final String _firstname;
     private final String _lastname;
-    private final String _signature;
-    private final Instant _issued;
-    private final Instant _validUntil;
-    private final Instant _birthday;
     private final int _picture;
+    private final Instant _birthday;
     private final long _authority;
     private final String _privateKey;
     private final String _publicKey;
+    // security
+    private final String _signature;
+    private final Instant _issued;
+    private final Instant _expires;
 
-    public SSI_Identity(String firstname, String lastname, String signature, Instant issued, Instant validUntil, Instant birthday, int picture, long authority, String privateKey, String publicKey) {
+    public SSI_Identity(String firstname, String lastname, String signature, Instant issued, Instant expires, Instant birthday, int picture, long authority, String privateKey, String publicKey) {
         this._firstname = firstname;
         this._lastname = lastname;
         this._signature = signature;
         this._issued = issued;
-        this._validUntil = validUntil;
+        this._expires = expires;
         this._birthday = birthday;
         this._picture = picture;
         this._authority = authority;
@@ -106,12 +108,12 @@ public class SSI_Identity {
     }
 
     @Ignore
-    public SSI_Identity(String firstname, String lastname, String signature, Instant issued, Instant validUntil, Instant birthday, int picture, long authority) {
+    public SSI_Identity(String firstname, String lastname, String signature, Instant issued, Instant expires, Instant birthday, int picture, long authority) {
         this._firstname = firstname;
         this._lastname = lastname;
         this._signature = signature;
         this._issued = issued;
-        this._validUntil = validUntil;
+        this._expires = expires;
         this._birthday = birthday;
         this._picture = picture;
         this._authority = authority;
@@ -145,6 +147,8 @@ public class SSI_Identity {
     }
 
     public static boolean validateSignature(String signature, String document, String authority){
+        if (signature == null) return false;
+
         String verification = document + "\n----SHA256 SIGNATURE----\n" + authority;
         verification = DigestUtils.sha256Hex(verification);
 
@@ -156,8 +160,8 @@ public class SSI_Identity {
         return _issued;
     }
 
-    public Instant get_validUntil() {
-        return _validUntil;
+    public Instant get_expires() {
+        return _expires;
     }
 
     public String getFullName(){
@@ -184,7 +188,7 @@ public class SSI_Identity {
     }
 
     public String getAsXML(){
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ").withZone( ZoneId.systemDefault() );;
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ").withZone( ZoneId.systemDefault() );
         String result = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
         result = result + "<ssi-identity>\n";
         result = result + "  <firstname>" + _firstname + "</firstname>";
@@ -194,6 +198,12 @@ public class SSI_Identity {
         result = result + "  <signature-sha256>" + _signature + "</signature-sha256>";
         result = result + "</ssi-identity>\n";
         return result;
+    }
+
+    public String toJSON(){
+        Gson gson = new GsonBuilder()
+                .setDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").create();
+        return gson.toJson(this);
     }
 
     public long get_uid() {
@@ -229,8 +239,8 @@ public class SSI_Identity {
     }
 
     public static SSI_Identity[] prepopulatedData(long _authorityID) {
-        Instant issuedDate = Instant.now();
-        Instant validUntil = Instant.now().plusSeconds(60*60*24*365);
+        Instant issuedDate = Instant.now(); // ids created now
+        Instant validUntil = Instant.now().plusSeconds(60*60*24*365); // valid until one year from now
         Instant birthday1 = Instant.parse("1986-07-26T08:25:20.00Z");
         Instant birthday2 = Instant.parse("2002-12-30T03:21:11.00Z");
         Instant birthday3 = Instant.parse("1973-10-03T09:49:15.00Z");
@@ -239,8 +249,9 @@ public class SSI_Identity {
                 new SSI_Identity("Valeria", "Morales", "ee3d29fa60ca721bde4707be580a3b3021f3825f8a7b00cc2d9ffeaf728afc25", issuedDate, validUntil, birthday2, R.drawable.woman1, _authorityID),
                 new SSI_Identity("Jamena","Untabe", "136fab0c90f1cc53c1f4c219515c288fa9e8b57c83457e3ca5f03c67af26c2dd", issuedDate, validUntil, birthday1, R.drawable.woman2, _authorityID),
                 new SSI_Identity("Holger","Kaufmann", "ea9679434d63ffcf3af4053a5f369b1105d6858e8fb1b58bc0ed39d461b82d77", issuedDate, validUntil, birthday3, R.drawable.man3, _authorityID),
-                new SSI_Identity("Feruniversität", "Großgummersbach", "6784994c820f55c3492c5513aeb85dc28cdb1fe5eea1196127f62d145c3b1ae1", issuedDate, validUntil, null, R.drawable.fernuni, _authorityID),
-                new SSI_Identity("Dr.", "Evil", "43999a4b0ff0afbba8e715f67712a0fa5ec8b7acb1f9fbaf91ccafd63931c15b", issuedDate, validUntil, birthday1, R.drawable.man4, _authorityID)
+                new SSI_Identity("Fernuniversität", "Großgummersbach", "6784994c820f55c3492c5513aeb85dc28cdb1fe5eea1196127f62d145c3b1ae1", issuedDate, validUntil, null, R.drawable.ic_education, _authorityID),
+                new SSI_Identity("Dr.", "Evil", "43999a4b0ff0afbba8e715f67712a0fa5ec8b7acb1f9fbaf91ccafd63931c15b", issuedDate, validUntil, birthday1, R.drawable.man4, _authorityID),
+                new SSI_Identity("", "Anonymous", null, null, null, null, -1, -1)
         };
     }
 }

@@ -1,5 +1,7 @@
 package de.vertedge.ssicapabilitymanager.SSI;
 
+import androidx.annotation.NonNull;
+
 public class SSI_Claim{
     private final String _subject;
     private final String _property;
@@ -23,6 +25,7 @@ public class SSI_Claim{
         return _value;
     }
 
+    @NonNull
     @Override
     public String toString(){
         return _subject + " " + _property + " " + _value;

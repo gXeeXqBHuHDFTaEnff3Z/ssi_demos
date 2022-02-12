@@ -8,10 +8,8 @@ import androidx.room.PrimaryKey;
 import androidx.room.Query;
 import androidx.room.TypeConverter;
 import androidx.room.TypeConverters;
-
 import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Date;
@@ -34,19 +32,6 @@ public class Joblisting {
         }
 
         @TypeConverter
-        public static ArrayList<String> fromString(String value) {
-            Type listType = new TypeToken<ArrayList<String>>() {}.getType();
-            return new Gson().fromJson(value, listType);
-        }
-
-        @TypeConverter
-        public static String fromArrayList(ArrayList<String> list) {
-            Gson gson = new Gson();
-            String json = gson.toJson(list);
-            return json;
-        }
-
-        @TypeConverter
         public static ArrayList<Long> fromInteger(String value) {
             Type listType = new TypeToken<ArrayList<Long>>() {}.getType();
             return new Gson().fromJson(value, listType);
@@ -55,8 +40,7 @@ public class Joblisting {
         @TypeConverter
         public static String fromIntArrayList(ArrayList<Long> list) {
             Gson gson = new Gson();
-            String json = gson.toJson(list);
-            return json;
+            return gson.toJson(list);
         }
     }
 
@@ -84,11 +68,20 @@ public class Joblisting {
     @PrimaryKey(autoGenerate = true) private int _uid;
     private final long _company_id;
     private final String _link;
-    private Date _validUntil;
-    private ArrayList<Long> minRequirements = new ArrayList<Long>();
-    private ArrayList<Long> bonusRequirements = new ArrayList<Long>();
+    private final Date _validUntil;
+    private final ArrayList<Long> minRequirements;
+    private final ArrayList<Long> bonusRequirements;
     private boolean _starred;
 
+    /** constructor for creating from database
+     *
+     * @param _company_id       uid of the organisation
+     * @param _validUntil       when this listing will be delisted
+     * @param minRequirements   capabilities that you need to have to compete
+     * @param bonusRequirements capabilties that will improve the competetiveness of the applicant
+     * @param _link             weblink to the joblisting / company website
+     * @param _starred          flagged in the GUI as favourite
+     */
     public Joblisting(long _company_id, Date _validUntil, ArrayList<Long> minRequirements, ArrayList<Long> bonusRequirements, String _link, boolean _starred) {
         this._company_id = _company_id;
         this._validUntil = _validUntil;
@@ -106,7 +99,7 @@ public class Joblisting {
         return _uid;
     }
 
-    public Long get_company_id() {
+    public long get_company_id() {
         return _company_id;
     }
 
@@ -134,6 +127,10 @@ public class Joblisting {
         return _starred;
     }
 
+    /** DEMO static data
+     *
+     * @return  list of hardcoded DEMO jobs
+     */
     public static Joblisting[] prepopulatedData(long cap1, long cap2, long cap3, long cap4) {
         ArrayList<Long> minReqs = new ArrayList<>();
         minReqs.add(cap1);

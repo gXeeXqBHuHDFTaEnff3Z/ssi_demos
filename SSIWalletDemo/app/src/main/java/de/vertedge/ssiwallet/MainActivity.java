@@ -1,16 +1,12 @@
 package de.vertedge.ssiwallet;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.Menu;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.navigation.NavigationView;
-
-import androidx.annotation.NonNull;
-import androidx.core.view.GravityCompat;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -19,9 +15,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import de.vertedge.ssiwallet.data.SSI.SSI_Database;
 import de.vertedge.ssiwallet.databinding.ActivityMainBinding;
-import de.vertedge.ssiwallet.ui.Authorities.FragmentAuthorities;
-import de.vertedge.ssiwallet.ui.VCs.FragmentVCs;
-import de.vertedge.ssiwallet.ui.home.HomeFragment;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -29,11 +22,18 @@ public class MainActivity extends AppCompatActivity{
     private ActivityMainBinding binding;
     String pin;
 
+    private final String PREF_PIN = "PIN";
+    private SharedPreferences pref;
+
+
     private SSI_Database db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        db = SSI_Database.getInstance(getApplicationContext());
+
+        pref = getSharedPreferences("mypref", 0);
 
         try {
             binding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -59,12 +59,17 @@ public class MainActivity extends AppCompatActivity{
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
-        // TODO PIN Eingabe öffnen
-        // Intent intent = new Intent(this, LoginActivity.class);
-        // startActivity(intent);
+        // PIN Eingabe öffnen
+        pin = pref.getString(PREF_PIN, null);
+        /*if (pin == null){
+            // DEMO set demo pin
+            pref.edit()
+                    .putString( PREF_PIN, "1234" )
+                    .apply();
 
-        // get data from database
-        db = SSI_Database.getInstance(getApplicationContext());
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+        }*/
     }
 
     @Override
@@ -82,7 +87,6 @@ public class MainActivity extends AppCompatActivity{
                 finish();
                 return true;
             case R.id.nav_help:
-                Log.d("AAAAAA", item.getTitle().toString());
             default:
                 return super.onOptionsItemSelected(item);
         }

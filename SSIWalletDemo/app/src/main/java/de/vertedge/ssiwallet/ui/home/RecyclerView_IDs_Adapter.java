@@ -1,32 +1,29 @@
 package de.vertedge.ssiwallet.ui.home;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.zxing.WriterException;
-
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.List;
-import java.util.Date;
-
 import androidmads.library.qrgenearator.QRGContents;
 import androidmads.library.qrgenearator.QRGEncoder;
-import de.vertedge.ssiwallet.MainActivity;
 import de.vertedge.ssiwallet.R;
 import de.vertedge.ssiwallet.data.SSI.SSI_Authority;
 import de.vertedge.ssiwallet.data.SSI.SSI_Database;
@@ -47,8 +44,9 @@ public class RecyclerView_IDs_Adapter extends RecyclerView.Adapter<RecyclerView_
     }
 
     // inflates the row layout from xml when needed
+    @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = mInflater.inflate(R.layout.recyclerview_row, parent, false);
         return new ViewHolder(view);
     }
@@ -56,46 +54,62 @@ public class RecyclerView_IDs_Adapter extends RecyclerView.Adapter<RecyclerView_
     // binds the data to the TextView in each row
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        SSI_Identity _identity = mData.get( position );
+        SSI_Identity _identity = mData.get(position);
         String name = _identity.get_firstname() + " " + _identity.get_lastname();
         String _signature = _identity.get_signature();
-        holder._txtVName.setText( name );
+        holder._txtVName.setText(name);
 
         // Dates sind kompliziert
+        DateTimeFormatter dtf = DateTimeFormatter
+                .ofLocalizedDate(FormatStyle.SHORT)
+                .withLocale(context.getResources().getConfiguration().locale)
+                .withZone(ZoneId.systemDefault());
+
         String _birthstring = "";
         Instant birthday = _identity.get_birthday();
         if (birthday != null) {
-            LocalDateTime _birthday = LocalDateTime.ofInstant(birthday, ZoneId.systemDefault());
-            _birthstring = context.getString(R.string.birthday) + " " + _birthday;
+            _birthstring = context.getString(R.string.birthday) + " " + dtf.format(birthday);
         }
 
         // Authority
         SSI_Database db = SSI_Database.getInstance(context);
-        SSI_Authority authority = db.ssiAuthorityDao().findByUID( _identity.get_authority() );
-        String _authority = authority.toString();
+        SSI_Authority ssi_authority = db.ssiAuthorityDao().findByUID(_identity.get_authority());
+
+        String _authority = "";
+        if (ssi_authority != null) _authority = ssi_authority.toString();
 
         // Signaturprüfung DEMO HARDCODED
-        boolean validated = _identity.isSignedBy(SSI_Authority.DEFAULT_AUTHORITY);
-        String validationResult = (validated ? "✓" : "INVALID");
+        String validationResult;
+        if (_identity.get_signature() == null) {
+            validationResult = context.getString(R.string.none);
+        } else {
+            boolean validated = _identity.isSignedBy(SSI_Authority.DEFAULT_AUTHORITY);
+            validationResult = (validated ? "✓" : "INVALID");
+        }
+
         String _signatureString = String.format("%s: [%s]",
                 context.getResources().getString(R.string.signature),
                 validationResult);
         holder._txtVSignature.setTag(_signature);
-        holder._txtVSignature.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                assert view.getTag() != null;
-                assert !view.getTag().toString().isEmpty();
+        holder._txtVSignature.setOnClickListener(view -> {
+            assert view.getTag() != null;
+            assert !view.getTag().toString().isEmpty();
 
-                String _signature = view.getTag().toString();
-                Toast.makeText(context, _signature, Toast.LENGTH_LONG).show();
-            }
+            String _signature1 = view.getTag().toString();
+            Toast.makeText(context, _signature1, Toast.LENGTH_LONG).show();
         });
 
         // views mit werten füllen
-        holder._txtVValue.setText( _authority + "\n" + _birthstring );
-        holder._txtVSignature.setText( _signatureString );
-        holder._imgVPicture.setImageDrawable( ContextCompat.getDrawable(holder._imgVPicture.getContext(), _identity.get_picture()) );
+        holder._txtVValue.setText(String.format("%s\n%s", _authority ,_birthstring));
+        holder._txtVSignature.setText(_signatureString);
+        holder._checkBox.setVisibility(View.GONE);
+
+        if (_identity.get_picture() > 0)
+            try {
+                holder._imgVPicture.setImageDrawable(ContextCompat.getDrawable(holder._imgVPicture.getContext(), _identity.get_picture()));
+            } catch (Resources.NotFoundException e) {
+                // no image then
+            }
 
         // setting this dimensions inside our qr code
         // encoder to generate our qr code.
@@ -126,6 +140,8 @@ public class RecyclerView_IDs_Adapter extends RecyclerView.Adapter<RecyclerView_
 
     // stores and recycles views as they are scrolled off screen
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        final CardView _cardView;
+        final CheckBox _checkBox;
         final TextView _txtVName;
         final TextView _txtVValue;
         final TextView _txtVSignature;
@@ -134,6 +150,8 @@ public class RecyclerView_IDs_Adapter extends RecyclerView.Adapter<RecyclerView_
 
         ViewHolder(View itemView) {
             super(itemView);
+            _cardView = itemView.findViewById(R.id.cardview);
+            _checkBox = itemView.findViewById(R.id.checkRecyclerView);
             _txtVName = itemView.findViewById(R.id.tvRecyclerName);
             _imgVPicture = itemView.findViewById(R.id.imgV_IDs_avatar);
             _txtVValue = itemView.findViewById(R.id.tcRecyclerValue);
@@ -146,16 +164,6 @@ public class RecyclerView_IDs_Adapter extends RecyclerView.Adapter<RecyclerView_
         public void onClick(View view) {
             if (mClickListener != null) mClickListener.onItemClick(view, getAdapterPosition());
         }
-    }
-
-    // convenience method for getting data at click position
-    SSI_Identity getItem(int id) {
-        return mData.get(id);
-    }
-
-    // allows clicks events to be caught
-    void setClickListener(ItemClickListener itemClickListener) {
-        this.mClickListener = itemClickListener;
     }
 
     // parent activity will implement this method to respond to click events

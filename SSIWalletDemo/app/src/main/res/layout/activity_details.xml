@@ -88,6 +88,30 @@
                 android:minLines="2"
                 android:text="@string/nothing"
                 android:textSize="@dimen/text_small" />
+
+            <TextView
+                android:id="@+id/textView8"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:gravity="start"
+                android:maxLines="2"
+                android:minLines="1"
+                android:text="@string/termsOfUse"
+                android:textSize="@dimen/text_large" />
+            <TextView
+                android:id="@+id/det_tv_termsofUse"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:layout_weight="100"
+                android:background="@drawable/black_border"
+                android:maxLines="5"
+                android:minLines="2"
+                android:text="@string/nothing"
+                android:textSize="@dimen/text_small" />
         </LinearLayout>
     </ScrollView>
 

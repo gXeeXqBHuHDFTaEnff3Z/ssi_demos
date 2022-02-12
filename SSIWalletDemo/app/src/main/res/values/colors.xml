@@ -7,4 +7,11 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="pass1">#6200EE</color>
+    <color name="pass2">#3700B3</color>
+    <color name="pass3">#BB9E00</color>
+    <color name="pass4">#0336FF</color>
+    <color name="pass5">#6A1B9A</color>
+    <color name="pass6">#1B5E20</color>
+    <color name="pass7">#455A64</color>
 </resources>

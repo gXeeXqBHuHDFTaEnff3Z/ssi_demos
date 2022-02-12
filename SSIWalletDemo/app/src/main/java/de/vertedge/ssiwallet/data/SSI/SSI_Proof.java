@@ -1,6 +1,6 @@
 package de.vertedge.ssiwallet.data.SSI;
 
-import android.util.Log;
+import androidx.annotation.NonNull;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
@@ -35,15 +35,16 @@ public class SSI_Proof {
      *  it is valid if the signature matches what the authority tells us it should
      *
      * @param claim the claim to validate
-     * @return
+     * @return  TRUE IFF signing claim with authority signature equals proof
      */
     public boolean validates(String claim){
         String verification = claim + "\n----SHA256 SIGNATURE----\n" + _authority;
         verification = DigestUtils.sha256Hex(verification);
-        Log.d("Proof.validates(String claim)", "Checking claim " + claim + ": is " + verification + " == " + _signature);
+        //Log.d("Proof.validates(String claim)", "Checking claim " + claim + ": is " + verification + " == " + _signature);
         return (_signature.equals(verification));
     }
 
+    @NonNull
     @Override
     public String toString(){
         return _signature + "," + _authority;

@@ -52,7 +52,7 @@ public class RecyclerView_Messages_Adapter extends RecyclerView.Adapter<Recycler
         // get message data
         Message _msg = mData.get(position);
 
-        Log.i(this.toString(), "Listing position " + position + " with message ID" + _msg.get_uid() + "and signature " + _msg.get_signature());
+        Log.d(this.toString(), "Listing position " + position + " with message ID" + _msg.get_uid() + "and signature " + _msg.get_signature());
 
         String _from = _msg.get_from_user();
         _from = _context.getResources().getString(R.string.from, _from);

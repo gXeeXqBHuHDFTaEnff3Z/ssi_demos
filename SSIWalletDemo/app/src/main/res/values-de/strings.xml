@@ -6,12 +6,12 @@
     <string name="nav_header_desc">Navigation</string>
     <string name="action_settings">Beenden</string>
     <string name="menu_home">Identitäten</string>
-    <string name="menu_gallery">überprüfbare Eigenschaften</string>
+    <string name="menu_gallery">Nachweise</string>
     <string name="menu_slideshow">Autoritäten</string>
     <string name="menu_help">Hilfe</string>
-    <string name="title_activity_login">Sicherheits-PIN</string>
+    <string name="title_activity_login">SSI-Wallet Sicherheits-PIN</string>
     <string name="prompt_email">Email</string>
-    <string name="prompt_password">Passwort</string>
+    <string name="prompt_password">PIN oder Passwort (DEMO PIN: 1234)</string>
     <string name="action_sign_in">Anmelden</string>
     <string name="action_sign_in_short">Anmelden</string>
     <string name="welcome">"Willkommen !"</string>
@@ -26,15 +26,17 @@
     <string name="issuer">Herausgeber</string>
     <string name="owner">Eigentümer</string>
     <string name="nobody">keiner</string>
+    <string name="claim">Inhalt</string>
     <string name="nothing">-</string>
     <string name="signature">Signatur</string>
     <string name="signatures">Signaturen</string>
     <string name="signature_verification">Signaturprüfung</string>
     <string name="copied_to_clipbaord">Wurde in die Zwischenablage kopiert</string>
+    <string name="copy_to_clipbaord">in Zwischenablage kopieren</string>
     <string name="valid">gültig</string>
     <string name="confirms">bestätigt</string>
     <string name="invalid">konnte keiner Authorität zugeordnet werden</string>
-    <string name="vc">überprüfbare Eigenschaften</string>
+    <string name="vc">Nachweis</string>
     <string name="send">Senden</string>
     <string name="authority">Autorität</string>
     <string name="birthday">geb.</string>
@@ -43,7 +45,7 @@
     <string name="signing_explanation_default"> Der SSI-Nutzer "%s" möchte, dass Sie folgendes Dokument digital signieren:</string>
     <string name="signing_explanation_login"> Die App "%s" fragt, ob Sie sich bei ihr mit einer SSI-Identität anmelden möchten:</string>
     <string name="signing_explanation_multiselect">Die App "%s" bittet Sie Nachweise auszuwählen, die ihr präsentiert werden sollen:</string>
-    <string name="added_vc">Neue überprüfbare Eigenschaft in SSI Wallet abgelegt: %s</string>
+    <string name="added_vc">Neuer Nachweis in SSI Wallet abgelegt</string>
     <string name="signing_select_id">Identität auswählen:</string>
     <string name="signing_denied">Ablehnen</string>
     <string name="signing_allow">Signieren</string>
@@ -61,4 +63,11 @@
     <string name="help_verification">Wählen Sie in einer anderen App einen prüfbaren Nachweis aus und klicken Sie dort auf die "Details"-Funktion. Dies sollte die Wallet App öffnen. </string>
     <string name="help_more">Weiterführende Informationen finden Sie unter https://github.com/gXeeXqBHuHDFTaEnff3Z/ssi_demos</string>
     <string name="excpetion_rep_format">Der Nachweis ist in einem nicht lesbaren Format.</string>
+    <string name="termsOfUse">Nutzungsbedingungen</string>
+    <string name="termsOfUse_noArchive">Dieser Nachweis soll nicht dauerhaft archiviert werden.</string>
+    <string name="termsOfUse_noArchiveBy">Meine Daten sollen bei %s nicht dauerhaft gespeichert werden.</string>
+    <string name="termsOfUse_noArchiveLogin">Meine Anmeldeidentität soll bei %s nicht gespeichert werden.</string>
+    <string name="termsOfUser_target">Diese Daten sollen nur in %s genutzt werden.</string>
+    <string name="confirmed">bestätigt</string>
+    <string name="none">keine</string>
 </resources>

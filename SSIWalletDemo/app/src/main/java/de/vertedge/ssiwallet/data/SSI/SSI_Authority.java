@@ -40,10 +40,10 @@ public class SSI_Authority {
 
     /** constructor used by dao
      *
-     * @param name
-     * @param uri
-     * @param publicKey
-     * @param picture
+     * @param name      user facing name
+     * @param uri       source URI for the authorititative information
+     * @param publicKey RSA public key for verification / encryption
+     * @param picture   id of the picture drawable
      */
     public SSI_Authority(String name, String uri, String publicKey, int picture, boolean enabled) {
         this.name = name;

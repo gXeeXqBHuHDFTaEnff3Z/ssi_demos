@@ -1,35 +1,28 @@
 package de.vertedge.ssicapabilitymanager.ui.gallery;
 
-import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
-import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.Switch;
-import android.widget.TextView;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
+import android.widget.Spinner;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import org.json.JSONException;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import de.vertedge.ssicapabilitymanager.MainActivity;
 import de.vertedge.ssicapabilitymanager.R;
 import de.vertedge.ssicapabilitymanager.SSI.SSI_Claim;
@@ -40,10 +33,8 @@ import de.vertedge.ssicapabilitymanager.capabilitymgmt.Joblisting;
 import de.vertedge.ssicapabilitymanager.capabilitymgmt.Message;
 import de.vertedge.ssicapabilitymanager.capabilitymgmt.Organisation;
 import de.vertedge.ssicapabilitymanager.databinding.FragmentJobsBinding;
-import de.vertedge.ssicapabilitymanager.ui.home.RecyclerView_Messages_Adapter;
-import kotlinx.coroutines.Job;
 
-public class FragmentJobs extends Fragment implements RecyclerView_Jobs_Adapter.ItemClickListener, RecyclerView_Jobs_Adapter.OnDataChangedListener {
+public class FragmentJobs extends Fragment implements RecyclerView_Jobs_Adapter.ItemClickListener, RecyclerView_Jobs_Adapter.OnDataChangedListener, AdapterView.OnItemSelectedListener {
 
 
 
@@ -59,7 +50,8 @@ public class FragmentJobs extends Fragment implements RecyclerView_Jobs_Adapter.
     private FragmentJobsBinding binding;
     private MainActivity main;
     private RecyclerView_Jobs_Adapter adapter;
-    private Switch switchFilter;
+    private Spinner spinnerFilter;
+    private ImageButton imgBcaplist;
     private RecyclerView rcView;
 
     private List<Long> _capabilities;
@@ -76,7 +68,6 @@ public class FragmentJobs extends Fragment implements RecyclerView_Jobs_Adapter.
         final View root = binding.getRoot();
 
         main = (MainActivity) getActivity();
-        switchFilter = root.findViewById(R.id.tvRecyclerMsg_CapsChecked);
         return root;
     }
 
@@ -93,29 +84,36 @@ public class FragmentJobs extends Fragment implements RecyclerView_Jobs_Adapter.
         List<Joblisting> joblistings = db.jobsDao().getAll();
 
         if (adapter == null){
-            adapter = new RecyclerView_Jobs_Adapter(main, joblistings, this );
+            adapter = new RecyclerView_Jobs_Adapter(main, joblistings, this, false );
             adapter.setClickListener( this::onItemClick );
             rcView.setAdapter(adapter);
             _capabilities = null;
         }
 
-        switchFilter = binding.getRoot().findViewById(R.id.jobs_filter_switch);
+        spinnerFilter = binding.getRoot().findViewById(R.id.spinnerFilterJobs);
+        spinnerFilter.setOnItemSelectedListener(this);
+        imgBcaplist = binding.getRoot().findViewById(R.id.imgBjobsCaplist);
+    }
 
-        switchFilter.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            // replace the adapter when the filter gets changed
-            if ( isChecked ){
-                // send the user to wallet app to select his signed VCs
-                startWalletForCapabilities();
+    @Override
+    public void onResume() {
+        super.onResume();
 
-            } else {
-                // no filter, show all jobs
-                ArrayList<Joblisting> jobs = new ArrayList<>(joblistings);
-                Log.i(this.toString(), "generating new adapter with " + jobs.size() + " jobs");
-                adapter = new RecyclerView_Jobs_Adapter(main, jobs , this);
-                rcView.setAdapter(adapter);
-                _capabilities = null;
-            }
-        });
+        // get spinner list
+        String[] spinnerSelection = new String[2];
+        spinnerSelection[0] = "All";
+        spinnerSelection[1] = getString(R.string.jobs_filter_by_comp);
+
+        // update the spinner
+        ArrayAdapter<String> spinnerArrayAdapter = new ArrayAdapter<>(
+                getActivity(),
+                R.layout.support_simple_spinner_dropdown_item,
+                spinnerSelection);
+        spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerFilter.setAdapter(spinnerArrayAdapter);
+
+        // update the spinner if we have caps here
+        if (_capabilities != null) spinnerFilter.setSelection( 1 );
     }
 
     @Override
@@ -126,7 +124,6 @@ public class FragmentJobs extends Fragment implements RecyclerView_Jobs_Adapter.
 
     public void startWalletForCapabilities(){
         // create intent
-        Log.d("YOU ARE", "HERE!");
         Intent ssiintent = new Intent(Intent.ACTION_ASSIST);
         ssiintent.setType("application/ssi");
         String action = "VCSELECT";
@@ -134,7 +131,7 @@ public class FragmentJobs extends Fragment implements RecyclerView_Jobs_Adapter.
         String ssidid = main.get_currentUser().get_ssidid();
 
         // add variables to intent
-        Log.i(this.toString(), "Starting Wallet app with intent for action " + action + " by user " + ssidid);
+        Log.d(this.toString(), "Starting Wallet app with intent for action " + action + " by user " + ssidid);
         Bundle extras = new Bundle();
         extras.putString(EXTRA_APPNAME, getApplicationName(main));
         extras.putString(EXTRA_ACTION, action);
@@ -150,7 +147,6 @@ public class FragmentJobs extends Fragment implements RecyclerView_Jobs_Adapter.
             Toast.makeText(getContext(), "Could not find SSI Wallet App, please install Wallet first", Toast.LENGTH_LONG).show();
             main.finish();
         }
-
     }
 
     public static String getApplicationName(Context context) {
@@ -163,8 +159,10 @@ public class FragmentJobs extends Fragment implements RecyclerView_Jobs_Adapter.
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == _requestCodeSelectVCs) {
+            Log.d("FragmentJobs.onActivityResult", resultCode + "");
             // this is a list of supposedly signed vcs for a job search
             CapMgmt_Database db = CapMgmt_Database.getInstance( getContext() );
+            assert (data != null);
             Bundle _data = data.getExtras();
 
             // get list of vcs and turn them into caps list
@@ -182,7 +180,8 @@ public class FragmentJobs extends Fragment implements RecyclerView_Jobs_Adapter.
                 try {
                     rep = new SSI_Representation( vcJSON );
                 } catch (JSONException e) {
-                    // JSON has wrong format
+                    // one of the JSONs has wrong format
+
                     String msg = getString(R.string.exception_unknown_capability);
                     Log.e("Wrong competence format", vcJSON);
                     e.printStackTrace();
@@ -192,7 +191,7 @@ public class FragmentJobs extends Fragment implements RecyclerView_Jobs_Adapter.
                     return;
                 }
 
-                // go thorugh all claims and try to find one that is a cap
+                // go through all claims and try to find one that is a cap
                 for (SSI_Claim claim : rep.get_claims()){
                     cap = db.capDao().getByName( claim.get_value() );
                     _rep = rep;
@@ -200,14 +199,16 @@ public class FragmentJobs extends Fragment implements RecyclerView_Jobs_Adapter.
                 }
 
                 if (cap == null) {
+                    // this rep has no claim that looks like a capability
                     String msg = getString(R.string.exception_unknown_capability);
                     Log.e("Could not find valid competence", vcJSON);
                     Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show();
                     Log.e(this.toString(), msg);
                     main.getFragmentManager().popBackStack();
                     return;
+                } else {
+                    caps.add(cap);
                 }
-                caps.add(cap);
             }
 
             // get list of uids for capabilities we got from the signed VCs
@@ -215,24 +216,9 @@ public class FragmentJobs extends Fragment implements RecyclerView_Jobs_Adapter.
             for (Capability cap : caps){
                 signedCapabilities.add( cap.get_uid() );
             }
-
-            // go through all jobs and filter out the ones not fitting the list of signed caps
-            List<Joblisting> alljobs = db.jobsDao().getAll();
-            List<Joblisting> matchingjobs = new ArrayList<>();
-            for (Joblisting job : alljobs){
-                if (Capability.requirementsFullfilled(job.getMinRequirements(), signedCapabilities) ){
-                    matchingjobs.add(job);
-                    Log.i(this.toString(), "job " + job.get_uid() + " fulfills requirements, added to list");
-                }
-            }
-
-            Log.i(this.toString(), "filtering jobs for wallet cap list, size " + matchingjobs.size());
             _capabilities = signedCapabilities;
-            adapter = new RecyclerView_Jobs_Adapter(getContext(), matchingjobs, this );
 
-            final RecyclerView recyclerView = binding.recVJobs;
-            recyclerView.setAdapter(adapter);
-            adapter.setClickListener( this::onItemClick );
+            // TODO was here XXX
         }
     }
 
@@ -265,16 +251,77 @@ public class FragmentJobs extends Fragment implements RecyclerView_Jobs_Adapter.
         db.messagesDao().insert(message);
 
         // tell user
-        String messageToUser = getResources().getString(R.string.job_applied, org.get_name());
+        String messageToUser = getResources().getString(R.string.jobs_applied, org.get_name());
         Toast.makeText(getContext(), messageToUser, Toast.LENGTH_LONG).show();
     }
 
     @Override
     public void OnDataChanged() {
-        Context context = binding.getRoot().getContext();
-        List<Joblisting> joblistings = db.jobsDao().getAll();
-        adapter = new RecyclerView_Jobs_Adapter(main, joblistings, this );
-        adapter.setClickListener( this::onItemClick );
-        rcView.setAdapter(adapter);
+        Log.d("FragmentJobs", "onDataChanged");
+        //spinnerFilter.setSelection( 0 );
+        onItemSelected(null, null, spinnerFilter.getSelectedItemPosition(), 0);
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+
+        switch(i){
+            case 0: // if 0 selected, display all
+                // no filter, show all jobs
+                ArrayList<Joblisting> jobs = new ArrayList<>(db.jobsDao().getAll());
+                Log.d(this.toString(), "generating new adapter with " + jobs.size() + " jobs");
+                adapter = new RecyclerView_Jobs_Adapter(main, jobs , this, false);
+                adapter.setClickListener( this::onItemClick );
+                rcView.setAdapter(adapter);
+                _capabilities = null;
+                break;
+            case 1: // if 1 is selected, check if we already have a cap list
+                if (_capabilities == null){
+                    startWalletForCapabilities();
+                } else {
+                    // go through all jobs and filter out the ones not fitting the list of signed caps
+                    List<Joblisting> alljobs = db.jobsDao().getAll();
+                    List<Joblisting> matchingjobs = new ArrayList<>();
+                    for (Joblisting job : alljobs){
+                        if (Capability.requirementsFullfilled(job.getMinRequirements(), _capabilities) ){
+                            matchingjobs.add(job);
+                            Log.d(this.toString(), "job " + job.get_uid() + " fulfills requirements, added to list");
+                        }
+                    }
+
+                    adapter = new RecyclerView_Jobs_Adapter(getContext(), matchingjobs, this, true );
+
+                    final RecyclerView recyclerView = binding.recVJobs;
+                    recyclerView.setAdapter(adapter);
+                    adapter.setClickListener( this::onItemClick );
+
+
+                    imgBcaplist.setVisibility(View.VISIBLE);
+                    imgBcaplist.setOnClickListener(view1 -> {
+                        ArrayList<String> capstr = new ArrayList<>();
+
+                        if (_capabilities != null)
+                        for (long capid : _capabilities){
+                            capstr.add( db.capDao().get(capid).get_name() );
+                        }
+
+                        new AlertDialog.Builder(getActivity())
+                                .setTitle(getString(R.string.capability))
+                                .setMessage(capstr.toString())
+                                .setIcon(R.drawable.ic_certificate)
+                                .setNeutralButton(android.R.string.ok, null)
+                                .show();
+                    });
+                }
+                break;
+            default:
+                 // hope this never happens
+                break;
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+        // do nothing
     }
 }

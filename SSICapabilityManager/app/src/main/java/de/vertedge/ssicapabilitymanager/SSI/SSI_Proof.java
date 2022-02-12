@@ -1,5 +1,7 @@
 package de.vertedge.ssicapabilitymanager.SSI;
 
+import androidx.annotation.NonNull;
+
 import org.apache.commons.codec.digest.DigestUtils;
 
 public class SSI_Proof {
@@ -33,7 +35,7 @@ public class SSI_Proof {
      *  it is valid if the signature matches what the authority tells us it should
      *
      * @param claim the claim to validate
-     * @return
+     * @return  TRUE IFF valid
      */
     public boolean validates(String claim){
         String verification = claim + "\n----SHA256 SIGNATURE----\n" + _authority;
@@ -41,6 +43,7 @@ public class SSI_Proof {
         return (_signature.equals(verification));
     }
 
+    @NonNull
     @Override
     public String toString(){
         return _signature + "," + _authority;

@@ -1,51 +1,61 @@
 package de.vertedge.ssiwallet.data.SSI;
 
 import android.text.TextUtils;
-import android.util.Log;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 
 public class SSI_Representation {
 
     private final ArrayList<SSI_Claim> _claims;
     private final ArrayList<SSI_Proof> _proofs;
+    private final int _iconID;
     private long _credentialSubject;
-    private final String _context;
+    private final String _termsOfUse; // how can this rep be used?
+    private final String _context; // in what context is this rep valid?
     private final String _issuer;
     private final java.time.Instant _issuance;
-    private final java.time.Instant _expiration;
+    private final java.time.Instant _expires;
 
-    public SSI_Representation(ArrayList<SSI_Claim> _claims, ArrayList<SSI_Proof> _proofs, long _credentialSubject, String _context, String _issuer, Instant _issuance, Instant _expiration) {
+    public SSI_Representation(ArrayList<SSI_Claim> _claims, ArrayList<SSI_Proof> _proofs, int iconID, long _credentialSubject, String termsOfUse, String _context, String _issuer, Instant _issuance, Instant _expires) {
         this._claims = _claims;
         this._proofs = _proofs;
+        this._iconID = iconID;
         this._credentialSubject = _credentialSubject;
+        this._termsOfUse = termsOfUse;
         this._context = _context;
         this._issuer = _issuer;
         this._issuance = _issuance;
-        this._expiration = _expiration;
+        this._expires = _expires;
     }
 
     /** creates a representation from a json
      *
-     * @param json
-     * @throws JSONException
+     * @param json  a SSI_Rep in JSON format
+     * @throws JSONException thrown when the string is missing SSI_Rep required field data
      */
     public SSI_Representation(String json) throws JSONException {
-        Log.d("SSI_Representation(String json)", (json == null ? "NULL" : json));
+        if (json == null) throw new JSONException("SSI_Representation JSON is empty (NULL)");
         // Deserialize json into object fields
         JSONObject jo = new JSONObject(json);
         this._credentialSubject = jo.getLong("_credentialSubject");
         this._context = jo.getString("_context");
+
+        // icons is optional
+        if ( jo.has("_iconID") ){
+            this._iconID = jo.getInt("_iconID");
+        } else this._iconID = -1;
+
+        // terms are optional
+        if ( jo.has("_termsOfUse") ){
+            this._termsOfUse = jo.getString("_termsOfUse");
+        } else this._termsOfUse = null;
+
         this._issuer = jo.getString("_issuer");
 
         // dates are either empty or in "yyyy-MM-dd'T'HH:mm:ssZ" format
@@ -60,15 +70,15 @@ public class SSI_Representation {
             this._issuance = null;
         }
 
-        if ( jo.has("_expiration") ){
-            String expiration = jo.getString("_expiration");
+        if ( jo.has("_expires") ){
+            String expiration = jo.getString("_expires");
             if (expiration.equals("{}")){
-                this._expiration = null;
+                this._expires = null;
             } else {
-                this._expiration = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ").parse( expiration, Instant::from);
+                this._expires = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ").parse( expiration, Instant::from);
             }
         } else {
-            this._expiration = null;
+            this._expires = null;
         }
 
         // claims
@@ -94,14 +104,21 @@ public class SSI_Representation {
         }
     }
 
-    public SSI_Representation(SSI_VerifiableCredential vc){
+    /** create a representation from a vc and include termsofuse
+     *
+     * @param vc            credential that should be turned into rep 1:1
+     * @param termsOfUse    terms of use to restrict using the rep
+     */
+    public SSI_Representation(SSI_VerifiableCredential vc, String termsOfUse){
         this._claims = vc.get_claims();
         this._proofs = vc.get_proofs();
+        this._iconID = vc.get_iconID();
         this._credentialSubject = vc.get_credentialSubject();
         this._context = vc.get_context();
         this._issuer = vc.get_issuer();
         this._issuance = vc.get_issuance();
-        this._expiration = vc.get_expiration();
+        this._expires = vc.get_expires();
+        this._termsOfUse = termsOfUse;
     }
 
     public ArrayList<SSI_Claim> get_claims() {
@@ -114,6 +131,10 @@ public class SSI_Representation {
 
     public ArrayList<SSI_Proof> get_proofs() {
         return _proofs;
+    }
+
+    public int get_iconID() {
+        return _iconID;
     }
 
     public long get_credentialSubject() {
@@ -137,37 +158,20 @@ public class SSI_Representation {
     }
 
     public Instant get_expiration() {
-        return _expiration;
+        return _expires;
+    }
+
+    public String get_termsOfUse() {
+        return _termsOfUse;
     }
 
     /**
      * DEMO we are just checking predetermined SHA256s
      * TRUE IFF all claims can be proven using the proofs, checking them against the authority
      *
-     * @return
+     * @return  TRUE IFF all claims can be proven using all proofs
      */
-    public boolean isValid(SSI_Authority authority) {
-        // if we find a claim that cannot be proven using the proofs, then we log it and return FALSE
-        for (SSI_Claim claim : _claims) {
-            boolean claimOK = false;
-            // can you find a proof that verifies this claim?
-            for (SSI_Proof proof : _proofs) {
-                if (proof.validates(claim.toString()))
-                    claimOK = true;
-            }
-            if (!claimOK) return false;
-        }
-        // if we did not manage to find a wrong one they must all be right
-        return true;
-    }
-
-    /** DEMO we are just checking predetermined SHA256s
-     * overloaded for checking against signing with identities
-     *
-     * @param identity
-     * @return
-     */
-    public boolean isValid(SSI_Identity identity) {
+    public boolean isValid() {
         // if we find a claim that cannot be proven using the proofs, then we log it and return FALSE
         for (SSI_Claim claim : _claims) {
             boolean claimOK = false;
@@ -185,10 +189,9 @@ public class SSI_Representation {
     /**
      * returns picture ID if VC contains a claim 'picture id ID'
      *
-     * @return
+     * @return  a picture ID we have a claim 'picture id ID', otherwise -1
      */
     public int get_picture() {
-        int result = -1;
         for (SSI_Claim claim : _claims) {
             if (claim.toString().contains("picture id")) {
                 return Integer.parseInt(claim.get_value());

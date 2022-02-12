@@ -10,20 +10,20 @@ import androidx.room.PrimaryKey;
 import androidx.room.Query;
 import androidx.room.TypeConverter;
 import androidx.room.TypeConverters;
-
 import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-
 import de.vertedge.ssicapabilitymanager.R;
 
 @Entity(tableName = "capmgmt_users")
 @TypeConverters(User.Converters.class)
 public class User {
 
+    /** database API
+     *
+     */
     @Dao
     public interface UserDao {
         @Query("SELECT * FROM capmgmt_users")
@@ -70,8 +70,20 @@ public class User {
     private final boolean _roleCompOwner;
     private final boolean _roleCompDeployer;
     private ArrayList<Long> jobsAppliedFor = new ArrayList<>();
-    private ArrayList<Long> capsVotedOn = new ArrayList<>();
+    private final ArrayList<Long> capsVotedOn;
 
+    /** constructor for creating new user from database entry
+     *
+     * @param _firstname    users first name
+     * @param _lastname     users last name
+     * @param _ssidid       DID of the user
+     * @param _picture      drawable id of the picture
+     * @param _organisationUID  database uid for org the user is member of
+     * @param _roleCompDeployer TRUE IFF job deployer
+     * @param _roleCompOwner    TRUE IFF cap owner
+     * @param _roleCompFacilitator  TRUE IFF educational facility worker
+     * @param capsVotedOn   list of caps this user already voted for to prohibit double voting
+     */
     public User(String _firstname, String _lastname, String _ssidid, int _picture, long _organisationUID, boolean _roleCompDeployer, boolean _roleCompOwner, boolean _roleCompFacilitator, ArrayList<Long> capsVotedOn) {
         this._firstname = _firstname;
         this._lastname = _lastname;
@@ -84,6 +96,15 @@ public class User {
         this.capsVotedOn = capsVotedOn;
     }
 
+    /** shortened constructor omitting votings for creating a new user
+     *
+     * @param _firstname    users first name
+     * @param _lastname     users last name
+     * @param _ssidid       DID of the user
+     * @param _picture      drawable id of the picture
+     * @param _organisationUID  database uid for org the user is member of
+     * @param _roleCompDeployer TRUE IFF job deployer
+     */
     @Ignore
     public User(String _firstname, String _lastname, String _ssidid, int _picture, long _organisationUID, boolean _roleCompFacilitator, boolean _roleCompOwner, boolean _roleCompDeployer) {
         this._firstname = _firstname;
@@ -149,6 +170,12 @@ public class User {
         return _roleCompDeployer;
     }
 
+    /** DEMO static data
+     *
+     * @param org1  uid of a org
+     * @param org2  uid of another org
+     * @return  list of hardcoded DEMO users
+     */
     public static User[] prepopulatedData(long org1, long org2) {
 
         return new User[] {

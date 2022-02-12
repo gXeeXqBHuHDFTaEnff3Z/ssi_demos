@@ -8,10 +8,8 @@ import androidx.room.PrimaryKey;
 import androidx.room.Query;
 import androidx.room.TypeConverter;
 import androidx.room.TypeConverters;
-
 import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +18,9 @@ import java.util.List;
 @TypeConverters(Organisation.Converters.class)
 public class Organisation {
 
+    /** database API
+     *
+     */
     @Dao
     public interface Org_Dao {
         @Query("SELECT * FROM capmgmt_organisations")
@@ -27,9 +28,6 @@ public class Organisation {
 
         @Query("SELECT * FROM capmgmt_organisations WHERE _uid LIKE :uid LIMIT 1")
         Organisation get(long uid);
-
-        @Query("SELECT * FROM capmgmt_organisations WHERE _ssidid LIKE :ssidid LIMIT 1")
-        Organisation getByDID(String ssidid);
 
         @Insert
         void insertAll(Organisation... orgs);
@@ -48,18 +46,26 @@ public class Organisation {
         @TypeConverter
         public static String fromArrayList(ArrayList<Integer> list) {
             Gson gson = new Gson();
-            String json = gson.toJson(list);
-            return json;
+            return gson.toJson(list);
         }
     }
 
     @PrimaryKey private final long _uid;
     private final String _name;
     private final String _ssidid;
-    private boolean _educator = false;
-    private boolean _jobsearch = true;
+    private boolean _educator;
+    private boolean _jobsearch;
     private final ArrayList<Integer> _members;
 
+    /** constructor for creating new organisations from database
+     *
+     * @param _uid      database id
+     * @param _name     user facing name
+     * @param _ssidid   DID of the org
+     * @param _educator TRUE IFF educational facility
+     * @param _jobsearch TRUE IFF job opportunity org
+     * @param _members  uid of users that are members
+     */
     public Organisation(long _uid, String _name, String _ssidid, boolean _educator, boolean _jobsearch, ArrayList<Integer> _members) {
         this._uid = _uid;
         this._name = _name;
@@ -109,10 +115,14 @@ public class Organisation {
         this._members.remove(_member);
     }
 
+    /** DEMO static data
+     *
+     * @return  list of hardcoded demo orgs
+     */
     public static Organisation[] prepopulatedData() {
-        ArrayList<Integer> _unimembers = new ArrayList<Integer>();
+        ArrayList<Integer> _unimembers = new ArrayList<>();
         _unimembers.add(0);
-        ArrayList<Integer> _fabmembers = new ArrayList<Integer>();
+        ArrayList<Integer> _fabmembers = new ArrayList<>();
         _unimembers.add(2);
         return new Organisation[] {
                 new Organisation(0, "Fernuniversität", "ssi:fernuni", true, false, _unimembers),

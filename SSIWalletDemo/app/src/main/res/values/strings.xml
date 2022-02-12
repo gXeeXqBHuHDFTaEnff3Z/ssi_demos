@@ -11,11 +11,11 @@
     <string name="menu_gallery">verifiable credentials</string>
     <string name="menu_slideshow">authorities</string>
     <string name="menu_help">help</string>
-    <string name="title_activity_login">security pin</string>
+    <string name="title_activity_login">SSI-Wallet security pin</string>
     <string name="prompt_email">email</string>
-    <string name="prompt_password">password</string>
+    <string name="prompt_password">PIN or password (DEMO PIN: 1234)</string>
     <string name="action_sign_in">login</string>
-    <string name="action_sign_in_short">logoff</string>
+    <string name="action_sign_in_short">login</string>
     <string name="welcome">Welcome!</string>
     <string name="invalid_username">invalid PIN</string>
     <string name="invalid_password">PIN has 4 characters</string>
@@ -28,10 +28,12 @@
     <string name="issuer">issuer</string>
     <string name="owner">owner</string>
     <string name="nobody">nobody</string>
+    <string name="claim">claim</string>
     <string name="nothing">-</string>
     <string name="signature">signature</string>
     <string name="signatures">signatures</string>
     <string name="signature_verification">signature verification</string>.
+    <string name="copy_to_clipbaord">copy to clipboard</string>
     <string name="copied_to_clipbaord">copied to clipboard</string>
     <string name="valid">valid</string>
     <string name="confirms">confirmed</string>
@@ -45,7 +47,7 @@
     <string name="signing_explanation_default">The SSI user "%s" wants you to digitally sign the following document:</string>
     <string name="signing_explanation_login"> The app "%s" asks if you want to log in to it with an SSI identity:</string>
     <string name="signing_explanation_multiselect">The app "%s" asks you to select credentials to be presented to it:</string>
-    <string name="added_vc">New verifiable property filed in SSI Wallet: %s</string>.
+    <string name="added_vc">New verifiable property filed in SSI Wallet</string>.
     <string name="signing_select_id">select identity:</string>
     <string name="signing_denied">deny</string>.
     <string name="signing_allow">sign</string>
@@ -63,4 +65,11 @@
     <string name="help_verification">Select a verifiable proof in another app and click the "Details" feature there. This should open the wallet app. </string>
     <string name="help_more">For more information, visit https://github.com/gXeeXqBHuHDFTaEnff3Z/ssi_demos</string>.
     <string name="excpetion_rep_format">The proof is in an unreadable format.</string>
+    <string name="termsOfUse">Terms of Use</string>
+    <string name="termsOfUse_noArchive">This data shall not be archived.</string>
+    <string name="termsOfUse_noArchiveBy">My data shall not be archived by %s.</string>
+    <string name="termsOfUse_noArchiveLogin">My login identity shall not be remembered by %s.</string>
+    <string name="termsOfUser_target">This data is only meant to be used in %s</string>
+    <string name="confirmed">confirmed</string>
+    <string name="none">none</string>
 </resources>

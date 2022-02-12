@@ -6,6 +6,18 @@
     android:layout_height="match_parent"
     tools:context=".ui.home.FragmentMessages">
 
+    <TextView
+        android:id="@+id/tv_msg_no_new_msg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/messages_no_new_message"
+        android:textSize="@dimen/text_large"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/recV_messages"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recV_messages"
         android:layout_width="match_parent"

@@ -1,6 +1,8 @@
 package de.vertedge.ssicapabilitymanager.ui.slideshow;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Paint;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
@@ -8,7 +10,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -17,12 +21,14 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.List;
+import java.util.Locale;
 
 import de.vertedge.ssicapabilitymanager.MainActivity;
 import de.vertedge.ssicapabilitymanager.R;
 import de.vertedge.ssicapabilitymanager.capabilitymgmt.CapMgmt_Database;
 import de.vertedge.ssicapabilitymanager.capabilitymgmt.Capability;
 import de.vertedge.ssicapabilitymanager.capabilitymgmt.Joblisting;
+import de.vertedge.ssicapabilitymanager.capabilitymgmt.Message;
 import de.vertedge.ssicapabilitymanager.capabilitymgmt.Organisation;
 import de.vertedge.ssicapabilitymanager.capabilitymgmt.User;
 
@@ -63,7 +69,7 @@ public class RecyclerView_Capabilities_Adapter extends RecyclerView.Adapter<Recy
                     DateTimeFormatter.ofLocalizedDateTime( FormatStyle.SHORT )
                             .withLocale( _context.getResources().getConfiguration().locale )
                             .withZone( ZoneId.systemDefault() );
-            _state = String.format("%s (%s: %d, %s: %d) \n %s %s",
+            _state = String.format(Locale.getDefault(), "%s (%s: %d, %s: %d) \n %s %s",
                     _cap.get_state(),
                     _context.getString(R.string.yes),
                     _cap.get_votesYes(),
@@ -97,6 +103,31 @@ public class RecyclerView_Capabilities_Adapter extends RecyclerView.Adapter<Recy
           text = text + "\n" + _context.getString(R.string.cap_voted);
           holder._txtVState.setText(text);
         }
+
+        // FLAGGING
+        holder._imgBflag.setOnClickListener(v -> {
+            DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                          // send this to mods
+                          Toast.makeText(_context, _context.getString(R.string.cap_flag_message), Toast.LENGTH_LONG).show();
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+                            // do nothing
+                        break;
+                }
+            };
+
+            String question = _context.getString(R.string.cap_flag_misue_confirm);
+            String yes = _context.getString(R.string.yes);
+            String no = _context.getString(R.string.no);
+            AlertDialog.Builder builder = new AlertDialog.Builder(_context);
+            builder.setMessage(question).setPositiveButton(yes, dialogClickListener)
+                    .setNegativeButton(no, dialogClickListener).show();
+
+        });
     }
 
     // total number of rows
@@ -116,21 +147,21 @@ public class RecyclerView_Capabilities_Adapter extends RecyclerView.Adapter<Recy
         // <0 means NO, else YES
         if ( view.getId() == R.id.bVoteNo){
             // NO clicked
-            Capability cap = mData.get(position);
+            Capability cap = mData.get(-position);
 
             // VOTE and remember the user voting
             db.capDao().voteNo(cap.get_uid());
             _currentUser.getCapsVotedOn().add(cap.get_uid());
             db.usersDao().insert(_currentUser);
 
-            mData.set(position, db.capDao().get(cap.get_uid()));
+            mData.set(-position, db.capDao().get(cap.get_uid()));
             this.notifyDataSetChanged();
         } else {
             // YES clicked
             Capability cap = mData.get(position);
 
             // VOTE and remember the user voting
-            db.capDao().voteNo(cap.get_uid());
+            db.capDao().voteYes(cap.get_uid());
             _currentUser.getCapsVotedOn().add(cap.get_uid());
             db.usersDao().insert(_currentUser);
 
@@ -144,6 +175,7 @@ public class RecyclerView_Capabilities_Adapter extends RecyclerView.Adapter<Recy
         TextView _txtVName;
         TextView _txtVDescription;
         TextView _txtVState;
+        ImageButton _imgBflag;
         Button _bVoteYes;
         Button _bVoteNo;
 
@@ -154,6 +186,7 @@ public class RecyclerView_Capabilities_Adapter extends RecyclerView.Adapter<Recy
             _txtVState = itemView.findViewById(R.id.tvRecycler_Caps_state);
             _bVoteYes = itemView.findViewById(R.id.bVoteYes);
             _bVoteNo = itemView.findViewById(R.id.bVoteNo);
+            _imgBflag = itemView.findViewById(R.id.imgBFlag);
             itemView.setOnClickListener(this);
         }
 

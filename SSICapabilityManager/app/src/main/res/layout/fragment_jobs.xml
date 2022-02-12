@@ -22,36 +22,41 @@
                 android:id="@+id/textView2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:text="@string/jobs_filter"
                 android:textSize="@dimen/text_small" />
 
             <Spinner
                 android:id="@+id/spinnerFilterJobs"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:minHeight="48dp"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
                 android:contentDescription="@string/jobs_filter_default"
-                android:padding="8dp"
+                android:minHeight="48dp"
+                android:spinnerMode="dropdown"
                 android:textSize="@dimen/text_small" />
+
+            <ImageButton
+                android:id="@+id/imgBjobsCaplist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:background="#FFFFFF"
+                android:maxWidth="48dp"
+                android:maxHeight="48dp"
+                android:minWidth="32dp"
+                android:minHeight="32dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_certificate"
+                android:visibility="gone" />
         </LinearLayout>
 
-        <Switch
-            android:id="@+id/jobs_filter_switch"
+        <View
+            android:id="@+id/divider3"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            android:enabled="true"
-            android:minHeight="48dp"
-            android:padding="8dp"
-            android:text="@string/jobs_filter_by_comp"
-            android:textAlignment="viewEnd"
-            android:textSize="@dimen/text_small" />
-
-        <androidx.constraintlayout.widget.Barrier
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:barrierDirection="top"
-            app:constraint_referenced_ids="divider1" />
+            android:layout_height="3dp"
+            android:background="?android:attr/listDivider" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recV_jobs"

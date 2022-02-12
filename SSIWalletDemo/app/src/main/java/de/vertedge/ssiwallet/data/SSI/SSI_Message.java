@@ -1,8 +1,6 @@
 package de.vertedge.ssiwallet.data.SSI;
 
-import androidx.room.ColumnInfo;
 import androidx.room.Dao;
-import androidx.room.Delete;
 import androidx.room.Entity;
 import androidx.room.Insert;
 import androidx.room.PrimaryKey;
@@ -18,26 +16,17 @@ public class SSI_Message {
         @Query("SELECT * FROM ssi_messages")
         List<SSI_Message> getAll();
 
-        @Query("SELECT * FROM ssi_messages WHERE uid IN (:userIds)")
-        List<SSI_Message> loadAllByIds(int[] userIds);
-
-        //@Query("SELECT * FROM ssi_messages WHERE to LIKE :identity")
-        //SSI_Message findByTo(int identity, String last);
-
-        @Insert
+         @Insert
         void insertAll(SSI_Message... messages);
-
-        @Delete
-        void delete(SSI_Message messages);
     }
 
     @PrimaryKey public int uid;
 
-    String _text = "";
-    int _from_ssi_id = -1;
-    int _to_ssi_id = -1;
-    int _ssi_capability = -1;
-    boolean _unread = true;
+    String _text;
+    int _from_ssi_id;
+    int _to_ssi_id;
+    int _ssi_capability;
+    boolean _unread;
 
     public SSI_Message(String _text, int _from_ssi_id, int _to_ssi_id, int _ssi_capability, boolean _unread) {
         this._text = _text;

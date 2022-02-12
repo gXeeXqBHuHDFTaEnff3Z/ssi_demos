@@ -2,6 +2,7 @@ package de.vertedge.ssicapabilitymanager.capabilitymgmt;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Entity;
@@ -10,13 +11,10 @@ import androidx.room.PrimaryKey;
 import androidx.room.Query;
 import androidx.room.TypeConverter;
 import androidx.room.TypeConverters;
-
 import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import de.vertedge.ssicapabilitymanager.SSI.SSI_Representation;
@@ -25,16 +23,13 @@ import de.vertedge.ssicapabilitymanager.SSI.SSI_Representation;
 @TypeConverters(Message.Converters.class)
 public class Message {
 
+    /** database API
+     *
+     */
     @Dao
     public interface SSIM_Dao {
         @Query("SELECT * FROM capmgmt_messages")
         List<Message> getAll();
-
-        @Query("SELECT * FROM capmgmt_messages WHERE _uid IN (:userIds)")
-        List<Message> loadAllByIds(int[] userIds);
-
-        //@Query("SELECT * FROM ssi_messages WHERE to LIKE :identity")
-        //SSI_Message findByTo(int identity, String last);
 
         @Query("SELECT * FROM capmgmt_messages WHERE _uid LIKE :uid")
         Message get(long uid);
@@ -49,6 +44,9 @@ public class Message {
         void delete(Message messages);
     }
 
+    /** converters for storing model in the sqlite db
+     *
+     */
     public static class Converters {
 
         @TypeConverter
@@ -60,22 +58,33 @@ public class Message {
         @TypeConverter
         public static String fromIntArrayList(ArrayList<Long> list) {
             Gson gson = new Gson();
-            String json = gson.toJson(list);
-            return json;
+            return gson.toJson(list);
         }
     }
 
     @PrimaryKey(autoGenerate = true) private long _uid;
-    private String _text = "";
+    private final String _text;
     private final String _from_user;
     private final String _to_user;
-    private ArrayList<Long> _unsignedCapabilities = new ArrayList<>();
-    private ArrayList<Long> _signedCapabilities = new ArrayList<>();
-    private String _attachedRep;
-    private String _signature = null;
-    private boolean _unread = true;
-    private boolean _isJobApplication;
+    private final ArrayList<Long> _unsignedCapabilities;
+    private final ArrayList<Long> _signedCapabilities;
+    private final String _attachedRep;
+    private final String _signature;
+    private final boolean _unread;
+    private final boolean _isJobApplication;
 
+    /** construcor for creating new model messages from database
+     *
+     * @param _text     text content of message
+     * @param _from_user    DID of the sending user
+     * @param _to_user      DID of the receiving user
+     * @param _unsignedCapabilities list of not validated capabilities
+     * @param _signedCapabilities   list of validated capabiltites
+     * @param _signature    SHA256
+     * @param _unread   TRUE IFF this is a new message
+     * @param _isJobApplication TRUE IFF meant as a job application (to change button text)
+     * @param _attachedRep  SSI_Representation JSON
+     */
     public Message(String _text, String _from_user, String _to_user, ArrayList<Long> _unsignedCapabilities, ArrayList<Long> _signedCapabilities, String _signature, boolean _unread, boolean _isJobApplication, String _attachedRep) {
         this._text = _text;
         this._from_user = _from_user;
@@ -132,6 +141,11 @@ public class Message {
         return _attachedRep;
     }
 
+    /** convert the message into a multiline string
+     *
+     * @return string containting uid, from, to and signature
+     */
+    @NonNull
     @Override
     public String toString(){
         String result = "uid:" + _uid + "\n";
@@ -142,12 +156,15 @@ public class Message {
         return result;
     }
 
-    public static Message[] prepopulatedData(long cap1, long cap2, long cap3, Context context) {
+    /** DEMO static data
+     *
+     * @param cap1  uid for one capability
+     * @param context   application context to get the DB
+     * @return  list of hardcoded DEMO messages
+     */
+    public static Message[] prepopulatedData(long cap1, Context context) {
         ArrayList<Long> hausarbeit = new ArrayList<>();
         hausarbeit.add( cap1 );
-        ArrayList<Long> bewerbung = new ArrayList<>();
-        bewerbung.add( cap2 );
-        bewerbung.add( cap3 );
 
         return new Message[] {
                 new Message("Liebes Fernuni-Team,\nnach bestandener Hausarbeit bitte ich um Signierung des Kompetenznachweises unten.\n\nVielen Dank", "ssi:fernuni-student:8685053", "ssi:fernuni-mitarbeiter", hausarbeit, null, null, true, false, SSI_Representation.prepopulatedData(context).toJSON())

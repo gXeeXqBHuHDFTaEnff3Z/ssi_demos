@@ -31,7 +31,7 @@ public class DetailsActivity extends AppCompatActivity {
     final private String EXTRA_REP_JSON = "EXTRA_REP_JSON";
 
     private String _firstname, _lastname, _receivedDID;
-    private String _claim, _signature;
+    private String _rep, _signature;
     private String _action, _appname;
 
     @Override
@@ -50,12 +50,12 @@ public class DetailsActivity extends AppCompatActivity {
                 Bundle extras = intent.getExtras();
                 _appname = extras.getString(EXTRA_APPNAME);
                 _action = extras.getString(EXTRA_ACTION);
-                _claim = extras.getString(EXTRA_REP_JSON);
+                _rep = extras.getString(EXTRA_REP_JSON);
                 _signature = extras.getString(EXTRA_SIGNATURE);
                 _receivedDID = extras.getString(EXTRA_DID);
 
                 // Logging
-                Log.d(this.toString(), "Received intent of type " + type + ", with action " + _action + ", claim " + _claim + ", DID " + _receivedDID);
+                Log.d(this.toString(), "Received intent of type " + type + ", with action " + _action + ", claim " + _rep + ", DID " + _receivedDID);
             }
         }
     }
@@ -63,9 +63,14 @@ public class DetailsActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        Log.i("SSIW Details", "onResume with action " + _action + ", and claim " + _claim);
+        Log.d("SSIW Details", "onResume with action " + _action + ", and claim " + _rep);
 
         SSI_Database db = SSI_Database.getInstance(getApplicationContext());
+
+        final TextView tvClaim = findViewById(R.id.det_tv_claim);
+        final TextView tvSignature = findViewById(R.id.det_tv_proofcheck);
+        final TextView tvCheck = findViewById(R.id.det_tv_verification);
+        final TextView tvTermsOfUse = findViewById(R.id.det_tv_termsofUse);
 
         assert this.getReferrer() != null;
         // get sending app and icon
@@ -75,11 +80,11 @@ public class DetailsActivity extends AppCompatActivity {
         // get representation
         SSI_Representation rep = null;
         try {
-            rep = new SSI_Representation( _claim );
+            rep = new SSI_Representation( _rep );
         } catch (JSONException e) {
             // JSON has wrong format
             String msg = getString(R.string.excpetion_rep_format);
-            Log.e(msg, _claim);
+            Log.e(msg, _rep);
             e.printStackTrace();
             Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
             Log.e(this.toString(), msg);
@@ -92,8 +97,7 @@ public class DetailsActivity extends AppCompatActivity {
         // try to validate against authorities
         boolean signatureValid = false;
         for (SSI_Authority ssi_authority : ssi_authorities){
-            Log.d("Authority", ssi_authority.getName());
-            if (rep.isValid(ssi_authority)){
+            if (rep.isValid()){
                 signatureValid = true;
                 authorityName = ssi_authority.getName();
                 break;
@@ -104,17 +108,12 @@ public class DetailsActivity extends AppCompatActivity {
         if (!signatureValid){
             List<SSI_Identity> identities = db.identityDao().getAll();
             for (SSI_Identity identity : identities){
-                Log.d("SSI_Identity", identity.getFullName());
-                if ( rep.isValid( identity ) ) {
+                if ( rep.isValid() ) {
                     signatureValid = true;
                     authorityName = identity.getFullName();
                 }
             }
         }
-
-        final TextView tvClaim = findViewById(R.id.det_tv_claim);
-        final TextView tvSignature = findViewById(R.id.det_tv_proofcheck);
-        final TextView tvCheck = findViewById(R.id.det_tv_verification);
 
         // construct text representation for claims
         String claims = "";
@@ -128,7 +127,37 @@ public class DetailsActivity extends AppCompatActivity {
             signatures = "•" + proof.toString() + "\n";
         }
 
+        // construct text representation for terms
+        String sourceTerms = rep.get_termsOfUse();
+
+        if (sourceTerms != null) {
+            sourceTerms = sourceTerms.replace("\u003d", "=").replace("\u0027", "'");
+        }
+
+        String terms = "";
+
+        if (sourceTerms != null){
+            if (sourceTerms.contains("noArchive=" + true)){
+                terms = terms + "• " + getString(R.string.termsOfUse_noArchive) + "\n";
+            }
+
+            if (sourceTerms.contains("target=")){
+                terms = terms + "• " +getString(R.string.termsOfUser_target,
+                        sourceTerms.substring(sourceTerms.indexOf("target=") + 8, sourceTerms.lastIndexOf("'") ) + "\n");
+            }
+        }
+
         tvClaim.setText( claims );
+        tvClaim.setOnClickListener(view -> {
+            // copy raw rep to clipboard
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText("application/ssi", _rep);
+            clipboard.setPrimaryClip(clip);
+            // show toast
+            String msg = getString(R.string.vc) + " " + getString(R.string.copied_to_clipbaord);
+            Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+        });
+
         tvSignature.setText( signatures );
         tvSignature.setOnClickListener(view -> {
             // copy signature to clipboard
@@ -139,6 +168,9 @@ public class DetailsActivity extends AppCompatActivity {
             String msg = getString(R.string.copied_to_clipbaord) + ": " + _signature;
             Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
         });
+
         tvCheck.setText( signatureValid ? getText(R.string.valid) + ": " + authorityName : getText(R.string.invalid));
+
+        tvTermsOfUse.setText( terms );
     }
 }

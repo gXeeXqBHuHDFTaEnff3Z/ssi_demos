@@ -34,6 +34,7 @@ public class FragmentMessages extends Fragment implements MainActivity.OnPermitD
 
     private HomeViewModel homeViewModel;
     private FragmentMessagesBinding binding;
+    private TextView tvNoNewMessages;
     private RecyclerView_Messages_Adapter adapter;
     private MainActivity main;
     private CapMgmt_Database db;
@@ -48,6 +49,7 @@ public class FragmentMessages extends Fragment implements MainActivity.OnPermitD
         main = (MainActivity) getActivity();
         assert main != null;
         main.registerListener( this );
+        tvNoNewMessages = root.findViewById(R.id.tv_msg_no_new_msg);
 
         db = CapMgmt_Database.getInstance(getContext());
         return root;
@@ -70,18 +72,17 @@ public class FragmentMessages extends Fragment implements MainActivity.OnPermitD
         if (main.get_currentUser() != null){
             _user = "ssi:" + main.get_currentUser().get_ssidid();
         }
-        List<Message> _messages = db.messagesDao().getAll();
-        List<Message> _applicableMessages = new ArrayList<>();
-        for (Message _message : _messages){
-            Log.i("FragmentMessages.onStart, filtering messages", "user is '"+_user + "', comparing to '"+_message.get_to_user()+"'");
-            if (_user.contains(_message.get_to_user())){
-                Log.i("FragmentMessages.onStart found message", "user " + _user + " has message " + _message.get_uid());
-                _applicableMessages.add(_message);
-            }
-        }
 
-        adapter = new RecyclerView_Messages_Adapter(context, _applicableMessages );
-        recyclerView.setAdapter(adapter);
+        // get messages and check if there are any
+        List<Message> messages = CapMgmt_Database.getUsersMessages(context, _user);
+
+        if (messages.size() == 0){
+            tvNoNewMessages.setVisibility(View.VISIBLE);
+        } else {
+            // create adapter with only those messages that are for the current user
+            adapter = new RecyclerView_Messages_Adapter(context, messages);
+            recyclerView.setAdapter(adapter);
+        }
     }
 
     @Override
@@ -135,4 +136,5 @@ public class FragmentMessages extends Fragment implements MainActivity.OnPermitD
         // refill adapter
         onStart();
     }
+
 }

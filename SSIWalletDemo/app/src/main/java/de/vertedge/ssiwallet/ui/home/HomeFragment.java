@@ -11,10 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import java.util.List;
-
-import de.vertedge.ssiwallet.MainActivity;
 import de.vertedge.ssiwallet.R;
 import de.vertedge.ssiwallet.data.SSI.SSI_Database;
 import de.vertedge.ssiwallet.data.SSI.SSI_Identity;
@@ -22,16 +19,13 @@ import de.vertedge.ssiwallet.databinding.FragmentHomeBinding;
 
 public class HomeFragment extends Fragment {
 
-    private HomeViewModel homeViewModel;
     private FragmentHomeBinding binding;
     private RecyclerView recyclerView;
-    private RecyclerView_IDs_Adapter adapter;
     private SSI_Database db;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        homeViewModel =
-                new ViewModelProvider(this).get(HomeViewModel.class);
+        HomeViewModel homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
 
         try {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
@@ -62,8 +56,19 @@ public class HomeFragment extends Fragment {
         Context context = binding.getRoot().getContext();
 
         List<SSI_Identity> list = db.identityDao().getAll();
+
+        // DEMO if we are empty we need to wait a sec for the db
+        if (list.size() == 0){
+            try {
+                Thread.sleep(200);
+                list = db.identityDao().getAll();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
         assert list != null;
-        adapter = new RecyclerView_IDs_Adapter(context, list );
+        RecyclerView_IDs_Adapter adapter = new RecyclerView_IDs_Adapter(context, list);
 
         recyclerView.setAdapter(adapter);
     }

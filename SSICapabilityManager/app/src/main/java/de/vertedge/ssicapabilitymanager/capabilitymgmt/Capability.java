@@ -9,9 +9,7 @@ import androidx.room.PrimaryKey;
 import androidx.room.Query;
 import androidx.room.TypeConverter;
 import androidx.room.TypeConverters;
-
 import java.time.Instant;
-import java.time.temporal.TemporalUnit;
 import java.util.List;
 
 @Entity(tableName = "capmgmt_capabilities", indices = {@Index(value = {"_name"},unique = true)})
@@ -20,6 +18,11 @@ public class Capability {
 
     public enum CapState {SUGGESTION, VOTING, ARBITRATION, ACCEPTED, BLOCKED;
 
+        /** return State by its ordinal number
+         *
+         * @param id    ordinal of the state in the enum list
+         * @return  state for the ordinal
+         */
         public static CapState getById(int id) {
             for(CapState e : values()) {
                 if(e.ordinal() == id) return e;
@@ -27,7 +30,11 @@ public class Capability {
             throw new IndexOutOfBoundsException("A capability state with id " + id + " does not exist");
         }}
 
+    /** converters for storing fields in the sqlite db
+     *
+     */
     public static class Converters{
+
         @TypeConverter
         public static Instant toDate(Long dateLong){
             return dateLong == null ? null: Instant.ofEpochSecond(dateLong);
@@ -39,6 +46,9 @@ public class Capability {
         }
     }
 
+    /** database API
+     *
+     */
     @Dao
     public interface Cap_Dao {
         @Query("SELECT * FROM capmgmt_capabilities")
@@ -77,6 +87,15 @@ public class Capability {
     private final long _votesNo;
     private final Instant _deadline;
 
+    /** constructor for room database
+     *
+     * @param _name         user facing name
+     * @param _description  description text including links
+     * @param state         authorization state
+     * @param votesYes      number of yes votes for release
+     * @param votesNo       number of no votes for release
+     * @param deadline      time the vote stops
+     */
     public Capability(String _name, String _description, CapState state, long votesYes, long votesNo, Instant deadline) {
         this._name = _name;
         this._description = _description;
@@ -86,7 +105,7 @@ public class Capability {
         _deadline = deadline;
     }
 
-    public void set_uid(int _uid) {
+    public void set_uid(long _uid) {
         this._uid = _uid;
     }
 
@@ -118,6 +137,10 @@ public class Capability {
         return _deadline;
     }
 
+    /** DEMO static data
+     *
+     * @return  list of hardocded caps
+     */
     public static Capability[] prepopulatedData() {
         Instant deadline = Instant.parse("2023-01-01T10:15:30.345Z");
 
@@ -131,6 +154,12 @@ public class Capability {
         };
     }
 
+    /** TRUE IFF the list of given capabilities fullfills the given requirements, that is, they are all matched
+     *
+     * @param requirements          list of requirements we want to check for
+     * @param given_capabilities    list of capabilitites that need to fulfill the requirements
+     * @return  TRUE IFF the capabilities cann fulfill the requirements
+     */
     public static boolean requirementsFullfilled(List<Long> requirements, List<Long> given_capabilities){
         // if you find a requirement that is not matched, return false, else true
         for (long requirement : requirements){
