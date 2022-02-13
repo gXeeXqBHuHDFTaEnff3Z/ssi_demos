@@ -1,6 +1,5 @@
 package de.vertedge.ssicapabilitymanager;
 
-import android.app.SearchManager;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -8,24 +7,28 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.view.Menu;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.navigation.NavigationView;
-import com.google.firebase.crashlytics.buildtools.reloc.org.apache.commons.codec.digest.DigestUtils;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.crashlytics.buildtools.reloc.org.apache.commons.codec.digest.DigestUtils;
+
 import org.json.JSONException;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import de.vertedge.ssicapabilitymanager.SSI.SSI_Claim;
 import de.vertedge.ssicapabilitymanager.SSI.SSI_Representation;
 import de.vertedge.ssicapabilitymanager.capabilitymgmt.CapMgmt_Database;
@@ -179,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
                         if (_currentUser != null) break;
                     }
 
-                int _picture = R.drawable.ic_certificate;
+                int _picture;
                 if (_currentUser != null) {
                     Log.d(this.toString(), "Found user for rep " + vcrep);
                     _picture = _currentUser.get_picture();
@@ -196,14 +199,12 @@ public class MainActivity extends AppCompatActivity {
                 TextView tVusername = (TextView) headerView.findViewById(R.id.tVnav_header_User);
                 TextView tVuser_info = (TextView) headerView.findViewById(R.id.tV_nav_header_info);
                 ImageView nav_pic = (ImageView) headerView.findViewById(R.id.imgVnav_header_pic);
-                tVusername.setText(_firstname + " " + _lastname);
+                tVusername.setText(String.format("%s %s",_firstname, _lastname));
                 tVuser_info.setText(_currentUser.get_ssidid());
                 Log.d(this.toString(), "Received intent with requestCode " + requestCode + ", lastname " + _lastname + ", claim " + _currentUser + ", signature: " + _signature);
 
                 // find out if we should display the jobs
-                boolean jobsVisibility = true;
-                if ((_currentUser != null) && (!_currentUser.is_roleCompOwner()))
-                    jobsVisibility = false;
+                boolean jobsVisibility = (_currentUser == null) || (_currentUser.is_roleCompOwner());
                 NavigationView navigationView;
                 navigationView = (NavigationView) findViewById(R.id.nav_view);
                 Menu nav_Menu = navigationView.getMenu();
@@ -214,26 +215,8 @@ public class MainActivity extends AppCompatActivity {
                 String msguser = "ssi:" + _currentUser.get_ssidid();
                 boolean hasMessages = CapMgmt_Database.hasMessages(this, msguser);
                 if (!hasMessages) {
-                    /*
-                    // TODO uncommenting will replace the messages fragment permanently
-                    Fragment newFragment;
-                    int menuItem;
-                    if (jobsVisibility) {
-                        newFragment = new FragmentJobs();
-                        menuItem = R.id.nav_gallery;
-                    } else {
-                        newFragment = new FragmentCapabilities();
-                        menuItem = R.id.nav_slideshow;
-                    }
-                    androidx.fragment.app.FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-                    ft.replace(R.id.nav_host_fragment_content_main, newFragment);
-                    ft.setTransition(androidx.fragment.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-                    ft.addToBackStack(null);
-                    ft.commit();
-                    navigationView.setCheckedItem(menuItem);*/
                     drawer.open();
                 }
-
             } else finish();
         } else if (requestCode == _requestCodeSigning) {
             // this is a reply to signing, check if it was signed
@@ -345,7 +328,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(this.toString(), "Message " + message.get_uid() + " has unsigned attachment: " + message.get_text());
                 // message has no signed attachment, this is for signing one
                 action = "SIGNING";
-                // TODO this does only get the first cap, not all of them
+                // DEMO this does only get the first cap, not all of them
                 capability = db.capDao().get(message.get_unsignedCapabilities().get(0));
                 representation = message.get_attachedRep();
                 claim = capability.get_name();
@@ -378,7 +361,7 @@ public class MainActivity extends AppCompatActivity {
             Log.e("SSI", "Could not find SSI request intent, SSI Wallet not installed");
 
             String errmsg = getString(R.string.exception_wallet_not_installed);
-            Toast.makeText(this, errmsg, Toast.LENGTH_LONG);
+            Toast.makeText(this, errmsg, Toast.LENGTH_LONG).show();
             finish();
         }
     }

@@ -101,7 +101,6 @@ public class FragmentVCs extends Fragment implements AdapterView.OnItemSelectedL
 
         List<SSI_VerifiableCredential> list = db.vcDao().getAll();
         adapter = new RecyclerView_VCs_Adapter(context, list , false);
-        // TODO adapter.setClickListener(this);
         recyclerView.setAdapter(adapter);
     }
 

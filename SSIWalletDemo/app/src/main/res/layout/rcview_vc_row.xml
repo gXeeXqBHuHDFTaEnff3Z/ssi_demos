@@ -132,7 +132,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_margin="8dp"
-                        android:background="#FFFFFF"
+                        android:background="@null"
                         android:contentDescription="@string/copy_to_clipbaord"
                         android:padding="12dp"
                         app:srcCompat="?attr/actionModeCopyDrawable" />

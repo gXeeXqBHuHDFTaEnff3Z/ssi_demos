@@ -14,7 +14,7 @@
         <LinearLayout
             android:id="@+id/linearLayout"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:layout_weight="1"
             android:orientation="vertical"
             app:layout_constrainedHeight="false"
@@ -211,7 +211,8 @@
                 android:textAllCaps="false"
                 android:textSize="@dimen/text_small"
                 app:iconSize="64dp"
-                app:iconTint="#FFFFFF" />
+                app:iconTint="#FFFFFF"
+                tools:ignore="TextContrastCheck" />
         </LinearLayout>
     </LinearLayout>
 

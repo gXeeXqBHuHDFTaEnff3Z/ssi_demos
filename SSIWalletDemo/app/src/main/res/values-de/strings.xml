@@ -6,6 +6,7 @@
     <string name="nav_header_desc">Navigation</string>
     <string name="action_settings">Beenden</string>
     <string name="menu_home">Identitäten</string>
+    <string name="spinnerIdentities">Identität als Filter auswählen</string>
     <string name="menu_gallery">Nachweise</string>
     <string name="menu_slideshow">Autoritäten</string>
     <string name="menu_help">Hilfe</string>

@@ -1,33 +1,27 @@
 package de.vertedge.ssicapabilitymanager.ui.home;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import de.vertedge.ssicapabilitymanager.MainActivity;
 import de.vertedge.ssicapabilitymanager.R;
 import de.vertedge.ssicapabilitymanager.capabilitymgmt.CapMgmt_Database;
 import de.vertedge.ssicapabilitymanager.capabilitymgmt.Message;
-import de.vertedge.ssicapabilitymanager.capabilitymgmt.User;
 import de.vertedge.ssicapabilitymanager.databinding.FragmentMessagesBinding;
 
 public class FragmentMessages extends Fragment implements MainActivity.OnPermitDenyListener {
@@ -79,6 +73,7 @@ public class FragmentMessages extends Fragment implements MainActivity.OnPermitD
         if (messages.size() == 0){
             tvNoNewMessages.setVisibility(View.VISIBLE);
         } else {
+            tvNoNewMessages.setVisibility(View.GONE);
             // create adapter with only those messages that are for the current user
             adapter = new RecyclerView_Messages_Adapter(context, messages);
             recyclerView.setAdapter(adapter);
@@ -94,7 +89,7 @@ public class FragmentMessages extends Fragment implements MainActivity.OnPermitD
     @Override
     public void OnDenyClick(long  uid) {
         // if the user denys a message, ask him if he wants to delete it
-        DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+        @SuppressLint("NotifyDataSetChanged") DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
             Message oldmsg = db.messagesDao().get(uid);
             switch (which){
                 case DialogInterface.BUTTON_POSITIVE:

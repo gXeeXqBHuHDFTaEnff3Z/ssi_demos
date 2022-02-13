@@ -8,6 +8,7 @@
     <string name="nav_header_desc">navigation</string>
     <string name="action_settings">exit</string>
     <string name="menu_home">identities</string>
+    <string name="spinnerIdentities">select identity as filter</string>
     <string name="menu_gallery">verifiable credentials</string>
     <string name="menu_slideshow">authorities</string>
     <string name="menu_help">help</string>

@@ -334,7 +334,6 @@ public class SigningActivity extends AppCompatActivity implements AdapterView.On
                         vc.get_issuer(),
                         vc.get_issuance(),
                         vc.get_expires());
-                // TODO _reps.add(vc.toJSON());
                 _reps.add(rep.toJSON());
             }
 

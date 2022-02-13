@@ -217,8 +217,6 @@ public class FragmentJobs extends Fragment implements RecyclerView_Jobs_Adapter.
                 signedCapabilities.add( cap.get_uid() );
             }
             _capabilities = signedCapabilities;
-
-            // TODO was here XXX
         }
     }
 

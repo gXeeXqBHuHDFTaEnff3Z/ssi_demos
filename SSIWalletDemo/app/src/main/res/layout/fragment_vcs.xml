@@ -18,10 +18,18 @@
             android:layout_height="wrap_content"
             android:layout_margin="12dp"
             android:layout_weight="1"
+            android:contentDescription="@string/spinnerIdentities"
             android:gravity="end"
             android:minHeight="48dp"
             android:textSize="@dimen/text_small" />
     </LinearLayout>
+
+    <View
+        android:id="@+id/divider4"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?android:attr/listDivider"
+        app:layout_constraintBottom_toTopOf="@+id/rvIdentities" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvIdentities"

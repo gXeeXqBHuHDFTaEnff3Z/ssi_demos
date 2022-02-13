@@ -23,7 +23,7 @@
     <string name="attachment_unsigned">Appendix: (capabilities)</string>
     <string name="attachment_signed">Appendix: (signed proof of capabilities)</string>
     <string name="deny">Deny</string>.
-    <string name="goto_signing">For SSI signing &gt;</string>
+    <string name="goto_signing">To SSI signing &gt;</string>
     <string name="send_to_ssi_app">Send to SSI wallet</string>.
     <string name="goto_details">Check</string>
     <string name="favourite">Mark as favourite</string>.

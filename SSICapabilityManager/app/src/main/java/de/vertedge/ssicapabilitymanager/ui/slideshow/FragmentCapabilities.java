@@ -62,7 +62,6 @@ public class FragmentCapabilities extends Fragment implements AdapterView.OnItem
         List<Capability> capabilityList = db.capDao().getAll();
 
         adapter = new RecyclerView_Capabilities_Adapter(context, capabilityList, main.get_currentUser() );
-        // TODO adapter.setClickListener(this);
         recyclerView.setAdapter(adapter);
     }
 
