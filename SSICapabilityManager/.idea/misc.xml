@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/Chris/AndroidStudioProjects/SSICapabilityManager/app/src/main/res/layout-night/fragment_help.xml" value="0.1625" />
         <entry key="..\:/Users/Chris/AndroidStudioProjects/SSICapabilityManager/app/src/main/res/layout-night/recyclerview_capabilities_row.xml" value="0.16197916666666667" />
         <entry key="..\:/Users/Chris/AndroidStudioProjects/SSICapabilityManager/app/src/main/res/layout-night/recyclerview_joblistings_row.xml" value="0.16197916666666667" />
         <entry key="..\:/Users/Chris/AndroidStudioProjects/SSICapabilityManager/app/src/main/res/layout-night/recyclerview_messages_row.xml" value="0.16197916666666667" />

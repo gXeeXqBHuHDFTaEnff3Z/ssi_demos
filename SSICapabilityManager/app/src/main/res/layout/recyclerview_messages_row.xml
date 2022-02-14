@@ -36,6 +36,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="12dp"
+                android:autoLink="web"
+                android:textColorLink="#2022b0"
                 android:text="Message body"
                 android:textColor="#000000"
                 android:textSize="@dimen/text_small" />
