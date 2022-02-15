@@ -261,6 +261,17 @@ public class SigningActivity extends AppCompatActivity implements AdapterView.On
         ssigDao = db.ssigDao();
 
         _identities = identDao.getAll();
+
+        // DEMO if we are empty we need to wait a sec for the db
+        if (_identities.size() == 0){
+            try {
+                Thread.sleep(200);
+                _identities = db.identityDao().getAll();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
         _credentials = vcDao.getAll();
         _signatures = ssigDao.getAll();
 
